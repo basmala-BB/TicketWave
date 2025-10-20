@@ -1,0 +1,23 @@
+﻿@model FilmPass.Models.ActorVM
+
+<h3>Add New Actor</h3>
+
+<form method="post" enctype="multipart/form-data"
+      asp-area="Admin" asp-controller="Actors" asp-action="Create">
+
+    <div class="mb-3">
+        <label class="form-label">Name</label>
+        <input class="form-control" asp-for="Name" />
+        <span class="text-danger" asp-validation-for="Name"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Image</label>
+        <input class="form-control" type="file" asp-for="Image" accept="image/*" />
+        <span class="text-danger" asp-validation-for="Image"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+</form>
+
+

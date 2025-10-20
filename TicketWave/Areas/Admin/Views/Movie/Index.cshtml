@@ -1,0 +1,109 @@
+﻿@model IEnumerable<Movie>
+
+<div class="container">
+
+    <div class="row mb-3 align-items-center my-3">
+        <div class="col-md-6">
+            <h2 class="display-6">All Movies</h2>
+        </div>
+        <div class="col-md-6 text-md-end text-start mt-2 mt-md-0">
+            <a href="/Admin/Movie/Create" class="btn btn-success">Create</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Cinema</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Main Image</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <th scope="row">@item.Id</th>
+                            <td>@item.Name</td>
+                            <td>@item.Category?.Name</td>
+                            <td>@item.Cinema?.Name</td>
+                            <td>@item.price.ToString("c")</td>
+                            <td>@item.DateTime.ToString("dd/MM/yyyy")</td>
+
+                            @if (item.status)
+                            {
+                                <td><span class="badge text-bg-success">Active</span></td>
+                            }
+                            else
+                            {
+                                <td><span class="badge text-bg-danger">Inactive</span></td>
+                            }
+
+                            <td>
+                                <img src="~/images/@item.MainImg"
+                                     alt="@item.Name"
+                                     style="width: 70px; height: 70px; border-radius: 10px; object-fit: cover;" />
+                            </td>
+
+                            <td>
+                                <a href="/Admin/Movie/Edit/@item.Id" type="button" class="btn btn-warning btn-sm">Edit</a>
+                                <a href="/Admin/Movie/Delete/@item.Id" class="btn btn-danger btn-sm btn-delete">Delete</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const deleteButtons = document.querySelectorAll(".btn-delete");
+
+        deleteButtons.forEach(button => {
+            button.addEventListener("click", function (e) {
+                e.preventDefault();
+                const url = this.getAttribute("href");
+
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "This action cannot be undone!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#d33",
+                    cancelButtonColor: "#3085d6",
+                    confirmButtonText: "Yes, delete it!"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: "Deleted!",
+                            text: "The movie has been deleted.",
+                            icon: "success"
+                        });
+
+                        window.location.href = url;
+                    }
+                });
+            });
+        });
+    });
+</script>
+
+@section Scripts {
+    @if (TempData["Notification"] is not null)
+    {
+        <script>
+            toastr.success('@TempData["Notification"]')
+        </script>
+    }
+}

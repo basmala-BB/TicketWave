@@ -1,0 +1,26 @@
+﻿@model IEnumerable<FilmPass.Models.Actors>
+
+<div class="d-flex justify-content-end mb-3">
+    <a class="btn btn-success" href="@Url.Action("Create", "Actors", new { area = "Admin" })">Add Actor</a>
+</div>
+
+<div class="row g-3">
+    @foreach (var actor in Model)
+    {
+        <div class="col-md-3">
+            <div class="card h-100 shadow-sm">
+                <img src="~/images/@actor.ImagePath" class="card-img-top" style="height:200px; object-fit:cover;" alt="@actor.Name" />
+                <div class="card-body">
+                    <h5 class="card-title">@actor.Name</h5>
+                    <p class="card-text">Movies: @actor.Movies.Count</p>
+                    <a class="btn btn-primary btn-sm" href="@Url.Action("Edit", "Actors", new { area = "Admin", id = actor.Id })">Edit</a>
+                    <a class="btn btn-danger btn-sm" href="@Url.Action("Delete", "Actors", new { area = "Admin", id = actor.Id })"
+                       onclick="return confirm('Are you sure?');">Delete</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+
+

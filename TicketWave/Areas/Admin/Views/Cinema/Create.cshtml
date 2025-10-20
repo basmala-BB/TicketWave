@@ -1,0 +1,71 @@
+﻿@model FilmPass.Models.Cinema
+
+<div class="container">
+
+    @* Pop-up for errors or notifications *@
+    @if (TempData["Error"] != null)
+    {
+        <script>
+            alert('@TempData["Error"]');
+        </script>
+    }
+    @if (TempData["Notification"] != null)
+    {
+        <script>
+            alert('@TempData["Notification"]');
+        </script>
+    }
+
+    <div class="row mb-3 align-items-center my-3">
+        <div class="col-md-6">
+            <h2 class="display-6">Create New Cinema</h2>
+        </div>
+    </div>
+
+    <div class="row my-3">
+        <div class="col-12">
+            <form method="post" enctype="multipart/form-data"
+                  asp-action="Create"
+                  asp-controller="Cinema"
+                  asp-area="Admin">
+
+                <!-- Cinema Name -->
+                <div class="mb-3">
+                    <label class="form-label">Name</label>
+                    <input class="form-control" asp-for="Name" />
+                    <span class="text-danger" asp-validation-for="Name"></span>
+                </div>
+
+                <!-- Cinema Image -->
+                <div class="mb-3">
+                    <label class="form-label">Image</label>
+                
+                    <input class="form-control" type="file" name="ImageFile" />
+                    <span class="text-danger" asp-validation-for="ImagePath"></span>
+                </div>
+
+                <!-- Cinema Description -->
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-control" style="height: 100px" asp-for="Description" placeholder="Leave a description here"></textarea>
+                    <span class="text-danger" asp-validation-for="Description"></span>
+                </div>
+
+                <!-- Cinema Status -->
+                <div class="mb-3">
+                    <label class="form-label">Status</label>
+                    <select asp-for="Status" class="form-select">
+                        <option value="true" selected>Active</option>
+                        <option value="false">Inactive</option>
+                    </select>
+                    <span class="text-danger" asp-validation-for="Status"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+</div>
+@* @section Scripts {
+    <partial name="_ValidationScriptsPartial">
+} *@

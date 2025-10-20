@@ -1,0 +1,29 @@
+﻿@model FilmPass.Models.ActorVM
+@{
+    int actorId = ViewBag.ActorId;
+    string? imagePath = ViewBag.ImagePath;
+}
+
+<h3>Edit Actor</h3>
+
+<form method="post" enctype="multipart/form-data"
+      asp-action="Edit" asp-controller="Actors" asp-area="Admin" asp-route-id="@actorId">
+
+    <div class="mb-3">
+        <label class="form-label">Name</label>
+        <input class="form-control" name="Name" value="@Model.Name" required />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Image</label>
+        <input type="file" class="form-control" name="Image" accept="image/*" />
+        @if (!string.IsNullOrEmpty(imagePath))
+        {
+            <img src="~/images/@imagePath" alt="@Model.Name" style="height:150px; object-fit:cover;" class="mt-2" />
+        }
+    </div>
+
+    <button type="submit" class="btn btn-primary">Update</button>
+</form>
+
+
