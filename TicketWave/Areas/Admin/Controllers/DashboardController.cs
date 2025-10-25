@@ -1,5 +1,5 @@
-﻿using FilmPass.Data;
-using FilmPass.Models;
+﻿
+using TicketWave.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace YourProjectNamespace.Areas.Admin.Controllers

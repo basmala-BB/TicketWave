@@ -1,4 +1,4 @@
-﻿namespace FilmPass.Models
+﻿namespace TicketWave.Models
 {
     public class Movie
     {

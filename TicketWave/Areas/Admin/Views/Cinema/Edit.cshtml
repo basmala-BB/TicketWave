@@ -1,4 +1,5 @@
-﻿@model Cinema
+﻿@using TicketWave.ViewModel
+@model UpdateCinemaVM
 
 <div class="container">
     <div class="row mb-3 align-items-center my-3">
@@ -13,11 +14,11 @@
                 @* <input type="hidden" name="id" value="@Model.Id"> *@
                 <div class="mb-3">
                     <label for="name" class="form-label">Name</label>
-                    <input class="form-control" name="Name" value="@Model.Name">
+                    <input class="form-control" sap_for="Name">
                 </div>
                 <div class="mb-3">
                     <label for="Img" class="form-label">Img</label>
-                    <input type="file" class="form-control" id="Img" name="Img" accept="image/*" onchange="previewImage(event)" value="@Model.ImagePath">
+                    <input type="file" Class="form-control" sap_for="NewImagePath" accept="images/*" onchange="previewImage(event)">
                 </div>
 
                 <div class="mb-3">
@@ -30,7 +31,7 @@
                 <div class="mb-3">
                     <label for="description" class="form-label">Description</label>
                     <div class="form-floating">
-                        <textarea class="form-control" placeholder="Leave a description here" style="height: 100px" name="Description">@Model.Description</textarea>
+                        <textarea class="form-control" placeholder="Leave a description here" style="height: 100px"asp-for="Description"></textarea>
                         <label for="description">You Description Here...</label>
                     </div>
                 </div>
@@ -70,3 +71,6 @@
         }
     }
 </script>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

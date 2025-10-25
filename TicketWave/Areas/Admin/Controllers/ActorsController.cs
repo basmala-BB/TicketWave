@@ -1,9 +1,9 @@
-﻿using FilmPass.Data;
-using FilmPass.Models;
+﻿
+using TicketWave.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace FilmPass.Areas.Admin.Controllers
+namespace TicketWave.Areas.Admin.Controllers
 {
     [Area("Admin")]
     public class ActorsController : Controller

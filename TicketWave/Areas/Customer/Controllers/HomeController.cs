@@ -1,9 +1,9 @@
-using FilmPass.Models;
+using TicketWave.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using TicketWave.Models;
 
-namespace FilmPass.Areas.Customer.Controllers
+
+namespace TicketWave.Areas.Customer.Controllers
 {
     [Area("Customer")]
     public class HomeController : Controller

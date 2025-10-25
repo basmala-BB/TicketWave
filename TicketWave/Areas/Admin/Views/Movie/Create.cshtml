@@ -1,4 +1,4 @@
-﻿@model FilmPass.Models.MovieVM
+﻿@model TicketWave.Models.MovieVM
 
 <div class="container">
     <h2 class="mb-4">Create New Movie</h2>
@@ -25,13 +25,13 @@
         <!-- Main Image -->
         <div class="mb-3">
             <label class="form-label">Main Image</label>
-            <input type="file" name="Img" accept="image/*" class="form-control" required />
+            <input type="file" name="Img" accept="images/*" class="form-control" required />
         </div>
 
         <!-- Sub Images -->
         <div class="mb-3">
             <label class="form-label">Sub Images</label>
-            <input type="file" name="SubImgs" accept="image/*" multiple class="form-control" />
+            <input type="file" name="SubImgs" accept="images/*" multiple class="form-control" />
         </div>
 
         <!-- Description -->
@@ -103,5 +103,11 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger mt-3">
+        @TempData["Error"]
+    </div>
 }
 

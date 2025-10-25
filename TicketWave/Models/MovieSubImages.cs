@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace FilmPass.Models
+namespace TicketWave.Models
 {
     [PrimaryKey (nameof(MovieId), nameof(ImagePath))]
     public class MovieSubImages

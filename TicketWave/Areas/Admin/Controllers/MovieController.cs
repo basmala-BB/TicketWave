@@ -1,9 +1,8 @@
-﻿using FilmPass.Data;
-using FilmPass.Models;
+﻿using TicketWave.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace FilmPass.Areas.Admin.Controllers
+namespace TicketWave.Areas.Admin.Controllers
 {
     [Area("Admin")]
     public class MovieController : Controller
@@ -34,77 +33,90 @@ namespace FilmPass.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(MovieVM model, IFormFile img, List<IFormFile>? subImgs)
+        public IActionResult Create(MovieVM model, IFormFile Img, List<IFormFile>? SubImgs)
         {
-            if (!ModelState.IsValid)
+            try
             {
+                if (!ModelState.IsValid)
+                {
+                    model.categories = _context.categories.ToList();
+                    model.cinemas = _context.cinemas.ToList();
+                    model.actors = _context.actors.ToList();
+                    return View(model);
+                }
+
+                // تأكيد وجود مجلد الصور
+                var mainFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
+                if (!Directory.Exists(mainFolder))
+                    Directory.CreateDirectory(mainFolder);
+
+                // الصورة الرئيسية
+                if (Img != null && Img.Length > 0)
+                {
+                    var mainFileName = Guid.NewGuid().ToString() + Path.GetExtension(Img.FileName);
+                    var mainFilePath = Path.Combine(mainFolder, mainFileName);
+                    using (var stream = new FileStream(mainFilePath, FileMode.Create))
+                    {
+                        Img.CopyTo(stream);
+                    }
+                    model.Movie.MainImg = mainFileName;
+                }
+
+                var movie = model.Movie;
+
+                // ربط الممثلين
+                if (model.ActorsIds != null && model.ActorsIds.Any())
+                {
+                    foreach (var actorId in model.ActorsIds)
+                    {
+                        var actor = _context.actors.Find(actorId);
+                        if (actor != null)
+                            movie.Actors.Add(actor);
+                    }
+                }
+
+                _context.movies.Add(movie);
+                _context.SaveChanges();
+
+                // الصور الفرعية
+                if (SubImgs != null && SubImgs.Count > 0)
+                {
+                    var subFolder = Path.Combine(mainFolder, "Movie_images");
+                    if (!Directory.Exists(subFolder))
+                        Directory.CreateDirectory(subFolder);
+
+                    foreach (var item in SubImgs)
+                    {
+                        var subFileName = Guid.NewGuid().ToString() + Path.GetExtension(item.FileName);
+                        var subFilePath = Path.Combine(subFolder, subFileName);
+
+                        using (var stream = new FileStream(subFilePath, FileMode.Create))
+                        {
+                            item.CopyTo(stream);
+                        }
+
+                        _context.movieSubImages.Add(new()
+                        {
+                            ImagePath = subFileName,
+                            MovieId = movie.Id,
+                        });
+                    }
+
+                    _context.SaveChanges();
+                }
+
+                TempData["Notification"] = "Movie created successfully!";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"❌ Error: {ex.Message} | Inner: {ex.InnerException?.Message}";
                 model.categories = _context.categories.ToList();
                 model.cinemas = _context.cinemas.ToList();
                 model.actors = _context.actors.ToList();
                 return View(model);
             }
 
-            // رفع الصورة الرئيسية
-            if (img is not null && img.Length > 0)
-            {
-                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(img.FileName);
-                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images", fileName);
-
-                using (var stream = System.IO.File.Create(filePath))
-                {
-                    img.CopyTo(stream);
-                }
-
-                model.Movie.MainImg = fileName;
-            }
-
-            // إضافة Movie جديد
-            var movie = model.Movie;
-
-            // إضافة Actors مختارين
-            if (model.ActorsIds != null)
-            {
-                foreach (var actorId in model.ActorsIds)
-                {
-                    var actor = _context.actors.Find(actorId);
-                    if (actor != null)
-                        movie.Actors.Add(actor);
-                }
-            }
-
-            _context.movies.Add(movie);
-            _context.SaveChanges();
-
-            if (subImgs != null && subImgs.Count > 0)
-            {
-                foreach (var item in subImgs)
-                {
-                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(item.FileName);
-                    var folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "Movie_images");
-                    if (!Directory.Exists(folder))
-                    {
-                        Directory.CreateDirectory(folder);
-                    }
-                    var filePath = Path.Combine(folder, fileName);
-
-
-                    using (var stream = System.IO.File.Create(filePath))
-                    {
-                        item.CopyTo(stream);
-                    }
-
-                    _context.movieSubImages.Add(new()
-                    {
-                        ImagePath = fileName,
-                        MovieId = movie.Id,
-                    });
-                }
-
-                _context.SaveChanges();
-            }
-
-            TempData["Notification"] = "Add Movie Successfully";
-            return RedirectToAction(nameof(Index));
         }
 
 

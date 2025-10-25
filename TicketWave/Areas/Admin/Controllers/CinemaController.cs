@@ -1,7 +1,8 @@
-﻿using FilmPass.Data;
-using FilmPass.Models;
+﻿using TicketWave.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using TicketWave.ViewModel;
+using Mapster;
 
 namespace FilmPass.Areas.Admin.Controllers
 {
@@ -19,57 +20,49 @@ namespace FilmPass.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            return View();
+            return View(new CreateCinemaVm());
         }
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Create(Cinema cinema, IFormFile? ImageFile)
+
+        public IActionResult Create(CreateCinemaVm createCinemaVm)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                if (ImageFile != null && ImageFile.Length > 0)
+                return View(createCinemaVm);
+            }
+
+            //Cinema cinema = new()
+            //{
+            //    Name = createCinemaVm.Name,
+            //    Status = createCinemaVm.Status,
+            //    Description = createCinemaVm.Description,
+            //};
+
+            Cinema cinemas = createCinemaVm.Adapt<Cinema>();
+            if (createCinemaVm.ImagePath is not null && createCinemaVm.ImagePath.Length > 0)
+            {
+
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(createCinemaVm.ImagePath.FileName);
+
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot//images", fileName);
+
+
+                using (var stream = System.IO.File.Create(filePath))
                 {
-                  
-                    var fileName = Path.GetFileName(ImageFile.FileName);
-                    if (fileName.Length > 100)
-                        fileName = fileName.Substring(0, 100);
-
-                    var imagesFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
-                    if (!Directory.Exists(imagesFolder))
-                        Directory.CreateDirectory(imagesFolder);
-
-                    var filePath = Path.Combine(imagesFolder, fileName);
-
-                   
-                    try
-                    {
-                        using var stream = new FileStream(filePath, FileMode.Create);
-                        ImageFile.CopyTo(stream);
-                        cinema.ImagePath = fileName;
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error saving image: {ex.Message}");
-                        ModelState.AddModelError("ImageFile", "Error saving image. Please try again.");
-                        return View(cinema); 
-                    }
+                    createCinemaVm.ImagePath.CopyTo(stream);
                 }
 
-                _context.cinemas.Add(cinema);
-                _context.SaveChanges();
+                cinemas.ImagePath = fileName;
 
-                TempData["Notification"] = "Cinema created successfully!";
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                var fullError = ex.Message;
-                if (ex.InnerException != null)
-                    fullError += " | Inner Exception: " + ex.InnerException.Message;
 
-                TempData["Error"] = fullError;
-                return View(cinema);
             }
+
+            _context.cinemas.Add(cinemas);
+            _context.SaveChanges();
+
+            TempData["Notification"] = "Cinema created successfully!";
+            return RedirectToAction(nameof(Index));
+
         }
 
         [HttpGet]
@@ -79,58 +72,69 @@ namespace FilmPass.Areas.Admin.Controllers
             if (cinema == null)
                 return RedirectToAction("NotFoundPage", "Home");
 
-            return View(cinema);
+            return View(new updateCinemaVM()
+            {
+                Id = cinema.Id,
+                Name = cinema.Name,
+                Description = cinema.Description,
+                Status = cinema.Status,
+                ImagePath = cinema.ImagePath,
+            });
         }
 
         [HttpPost]
-        public IActionResult Edit(Cinema cinema, IFormFile? img)
+        public IActionResult Edit(UpdateCinemaVM updateCinemaVM)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                var cinemaInDb = _context.cinemas.AsNoTracking().FirstOrDefault(e => e.Id == cinema.Id);
-                if (cinemaInDb == null)
-                    return RedirectToAction("NotFoundPage", "Home");
+                return View(updateCinemaVM);
+            }
 
-                if (img != null && img.Length > 0)
+            var cinemaInDb = _context.cinemas.AsNoTracking().FirstOrDefault(e => e.Id == updateCinemaVM.Id);
+            if (cinemaInDb == null)
+                return RedirectToAction("NotFoundPage", "Home");
+            //Cinema cinema = new()
+            //{
+            //    Name = updateCinemaVM.Name,
+            //    Status = updateCinemaVM.Status,
+            //    Description = updateCinemaVM.Description,
+
+            //};
+            Cinema cinemas = updateCinemaVM.Adapt<Cinema>();
+
+            if (updateCinemaVM.NewImagePath is not null && updateCinemaVM.NewImagePath.Length > 0)
+            {
+
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(updateCinemaVM.NewImagePath.FileName);
+
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot//images", fileName);
+
+
+                using (var stream = System.IO.File.Create(filePath))
                 {
-                    var imagesFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
-                    if (!Directory.Exists(imagesFolder))
-                        Directory.CreateDirectory(imagesFolder);
-
-                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(Path.GetFileName(img.FileName));
-                    var filePath = Path.Combine(imagesFolder, fileName);
-
-                    using (var stream = System.IO.File.Create(filePath))
-                    {
-                        img.CopyTo(stream);
-                    }
-
-                    
-                    if (!string.IsNullOrEmpty(cinemaInDb.ImagePath))
-                    {
-                        var oldPath = Path.Combine(imagesFolder, cinemaInDb.ImagePath);
-                        if (System.IO.File.Exists(oldPath))
-                            System.IO.File.Delete(oldPath);
-                    }
-
-                    cinema.ImagePath = fileName;
-                }
-                else
-                {
-                    cinema.ImagePath = cinemaInDb.ImagePath;
+                    updateCinemaVM.NewImagePath.CopyTo(stream);
                 }
 
-                _context.cinemas.Update(cinema);
-                _context.SaveChanges();
+                var oldpath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot//images", cinemaInDb.ImagePath);
+                if (System.IO.File.Exists(oldpath))
+                {
+                    System.IO.File.Delete(oldpath);
+                }
 
-                TempData["Notification"] = "Update Cinema Successfully";
-                return RedirectToAction(nameof(Index));
+
+                cinemas.ImagePath = fileName;
             }
-            catch (Exception ex)
+            else
             {
-                TempData["Error"] = $"Error: {ex.Message}";
-                return View(cinema);
+                cinemas.ImagePath = cinemaInDb.ImagePath;
             }
+
+            _context.cinemas.Update(cinemas);
+            _context.SaveChanges();
+
+            TempData["Notification"] = "Update Cinema Successfully";
+            return RedirectToAction(nameof(Index));
+
         }
 
         public IActionResult Delete(int id)
@@ -141,7 +145,7 @@ namespace FilmPass.Areas.Admin.Controllers
 
             try
             {
-               
+
                 if (!string.IsNullOrEmpty(cinema.ImagePath))
                 {
                     var imagesFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
