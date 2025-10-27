@@ -1,19 +1,27 @@
-﻿
-using TicketWave.Models;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
+using TicketWave.Models;
+using TicketWave.Repositories;
+using TicketWave.Repositories.IRepositories;
 
 namespace TicketWave.Areas.Admin.Controllers
 {
     [Area("Admin")]
     public class ActorsController : Controller
     {
-        private readonly ApplicationdbContext _context = new();
+        //private readonly ApplicationdbContext _context = new();
+        private readonly IRepository<Actors> _ActorsRepository;
+
+        public ActorsController(IRepository<Actors> actorsRepository)
+        {
+            _ActorsRepository = actorsRepository;
+        }
 
         // ================= Index =================
-        public IActionResult Index()
+        public async Task<IActionResult> Index(CancellationToken cancellationToken)
         {
-            var actors = _context.actors.AsNoTracking().ToList();
+            var actors = await _ActorsRepository.GetAsync(tracked: false , cancellationToken : cancellationToken);
             return View(actors);
         }
 
@@ -26,7 +34,7 @@ namespace TicketWave.Areas.Admin.Controllers
 
         // ================= Create POST =================
         [HttpPost]
-        public IActionResult Create(ActorVM model)
+        public async Task<IActionResult> Create(ActorVM model , CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid) return View(model);
 
@@ -44,17 +52,21 @@ namespace TicketWave.Areas.Admin.Controllers
                 model.Image.CopyTo(stream);
             }
 
-            _context.actors.Add(new Actors { Name = model.Name, ImagePath = fileName });
-            _context.SaveChanges();
+            await _ActorsRepository.AddAsync(new Actors
+            {
+                Name = model.Name,
+                ImagePath = fileName
+            }, cancellationToken);
+           await _ActorsRepository.CommitAsync(cancellationToken);
 
             TempData["Notification"] = "Actor added successfully!";
             return RedirectToAction("Index");
         }
         // ================= Edit GET =================
         [HttpGet]
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id , CancellationToken cancellationToken)
         {
-            var actor = _context.actors.Find(id);
+            var actor = await _ActorsRepository.GetOneAsync(e => e.Id == id, cancellationToken: cancellationToken);
             if (actor == null) return NotFound();
 
             var vm = new ActorVM { Name = actor.Name };
@@ -66,9 +78,9 @@ namespace TicketWave.Areas.Admin.Controllers
 
         // ================= Edit POST =================
         [HttpPost]
-        public IActionResult Edit(int id, ActorVM model)
+        public async Task<IActionResult> Edit(int id, ActorVM model , CancellationToken cancellationToken)
         {
-            var actor = _context.actors.Find(id);
+            var actor = await _ActorsRepository.GetOneAsync(e => e.Id == id, cancellationToken: cancellationToken);
             if (actor == null) return NotFound();
 
             if (!ModelState.IsValid)
@@ -97,18 +109,17 @@ namespace TicketWave.Areas.Admin.Controllers
 
                 actor.ImagePath = fileName;
             }
-
-            _context.actors.Update(actor);
-            _context.SaveChanges();
+            _ActorsRepository.Update(actor);
+            await _ActorsRepository.CommitAsync(cancellationToken);
 
             TempData["Notification"] = "Actor updated successfully!";
             return RedirectToAction(nameof(Index));
         }
 
         // ================= Delete =================
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
-            var actor = _context.actors.Find(id);
+            var actor = await _ActorsRepository.GetOneAsync(e => e.Id == id, cancellationToken: cancellationToken);
             if (actor == null) return NotFound();
 
             if (!string.IsNullOrEmpty(actor.ImagePath))
@@ -118,15 +129,11 @@ namespace TicketWave.Areas.Admin.Controllers
                     System.IO.File.Delete(path);
             }
 
-            _context.actors.Remove(actor);
-            _context.SaveChanges();
+            _ActorsRepository.Delete(actor);    
+            await _ActorsRepository.CommitAsync(cancellationToken);
 
             TempData["Notification"] = "Actor deleted successfully!";
             return RedirectToAction(nameof(Index));
         }
     }
 }
-
-
-
-

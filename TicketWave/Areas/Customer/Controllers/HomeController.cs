@@ -9,11 +9,15 @@ namespace TicketWave.Areas.Customer.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private ApplicationdbContext _context;// = new();
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, ApplicationdbContext context)
         {
+            _context = context;
             _logger = logger;
         }
+
+
 
         public IActionResult Index()
         {

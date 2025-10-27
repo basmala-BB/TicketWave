@@ -1,3 +1,5 @@
+using TicketWave;
+
 namespace TicketWave
 {
     public class Program
@@ -8,6 +10,13 @@ namespace TicketWave
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+
+            var connectionString =
+                    builder.Configuration.GetConnectionString("DefaultConnection")
+                        ?? throw new InvalidOperationException("Connection string"
+                        + "'DefaultConnection' not found.");
+
+            builder.Services.RegisterConfig(connectionString);
 
             var app = builder.Build();
 

@@ -13,6 +13,7 @@ namespace TicketWave.Migrations
 {
     [DbContext(typeof(ApplicationdbContext))]
     [Migration("20251018094642_Initial")]
+
     partial class Initial : Migration
     {
         /// <inheritdoc />

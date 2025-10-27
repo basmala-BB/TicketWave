@@ -12,6 +12,9 @@ namespace TicketWave.Models
         public string Description { get; set; } = string.Empty;
         public bool status { get; set; }
 
-
+        internal Category FirstOrDefuit()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
