@@ -1,0 +1,7 @@
+ALTER TABLE MovieSubImage
+DROP CONSTRAINT FK_MovieSubImage_Movie_MovieId;
+
+ALTER TABLE MovieSubImage
+ADD CONSTRAINT FK_MovieSubImage_Movie_MovieId
+FOREIGN KEY (MovieId) REFERENCES Movie(Id)
+ON DELETE CASCADE;

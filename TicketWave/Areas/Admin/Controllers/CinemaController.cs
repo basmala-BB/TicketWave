@@ -1,15 +1,19 @@
 ﻿using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using TicketWave.Models;
 using TicketWave.Repositories;
 using TicketWave.Repositories.IRepositories;
+using TicketWave.Utitlies;
 using TicketWave.ViewModel;
 
 namespace FilmPass.Areas.Admin.Controllers
 {
     [Area("Admin")]
+
+    [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE},{SD.EMPLOYEE_ROLE}")]
     public class CinemaController : Controller
     {
         private readonly IRepository<Cinema> _cinemaRepository;
@@ -61,6 +65,7 @@ namespace FilmPass.Areas.Admin.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
         {
             var cinema = await _cinemaRepository.GetOneAsync(e => e.Id == id, tracked: false);
@@ -71,6 +76,7 @@ namespace FilmPass.Areas.Admin.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task<IActionResult> Edit(UpdateCinemaVM updateCinemaVM, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
@@ -107,6 +113,8 @@ namespace FilmPass.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
 
         }
+
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             var cinema = await _cinemaRepository.GetOneAsync(e => e.Id == id);

@@ -1,10 +1,13 @@
 ﻿
-using TicketWave.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TicketWave.Models;
+using TicketWave.Utitlies;
 
 namespace YourProjectNamespace.Areas.Admin.Controllers
 {
-    [Area("Admin")] 
+    [Area("Admin")]
+    [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE},{SD.EMPLOYEE_ROLE}")]
     public class DashboardController : Controller
     {
         ApplicationdbContext _context = new();

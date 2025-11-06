@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using TicketWave.ViewModels;
+using TicketWave.ViewModel;
 
 namespace TicketWave.Models;
 
@@ -19,8 +20,9 @@ public class ApplicationdbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Category> categories { get; set; }
     public DbSet<Movie> movies { get; set; }
     public DbSet<Actors> actors { get; set; }
-    public DbSet<Movie> cinemas { get; set; }
-    public DbSet<MovieSubImages> movieSubImages { get; set; }
+    public DbSet<Cinema> cinemas { get; set; }
+    public DbSet<MovieSubImage> movieSubImages { get; set; }
+    public DbSet<ApplicationUserOTP> applicationUserOTPs { get; set; }
 
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -29,7 +31,10 @@ public class ApplicationdbContext : IdentityDbContext<ApplicationUser>
         optionsBuilder.UseSqlServer("Data Source=.;Initial catalog = Filmpass;Integrated Security=True;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Application Intent=ReadWrite;Multi Subnet Failover=False");
     }
 
-public DbSet<TicketWave.ViewModels.RegisterVM> RegisterVM { get; set; } = default!;
+public DbSet<TicketWave.ViewModel.ValidateOTPVM> ValidateOTPVM { get; set; } = default!;
+
+public DbSet<TicketWave.ViewModel.NewPasswordVM> NewPasswordVM { get; set; } = default!;
+
 
 }
 

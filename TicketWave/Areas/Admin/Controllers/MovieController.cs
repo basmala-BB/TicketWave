@@ -1,13 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using TicketWave.Models;
 using TicketWave.Repositories;
 using TicketWave.Repositories.IRepositories;
+using TicketWave.Utitlies;
 
 namespace TicketWave.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE},{SD.EMPLOYEE_ROLE}")]
     public class MovieController : Controller
     {
 
@@ -16,7 +19,7 @@ namespace TicketWave.Areas.Admin.Controllers
         private readonly IRepository<Cinema> _cinemaRepository;
         private readonly IRepository<Actors> _ActorsRepository;
         private readonly IMovieRepository _movieRepository;
-        private readonly IRepository<MovieSubImages> _movieSubImagesRepository;
+        private readonly IRepository<MovieSubImage> _movieSubImagesRepository;
 
         public MovieController(
             ApplicationdbContext context,
@@ -24,7 +27,7 @@ namespace TicketWave.Areas.Admin.Controllers
             IRepository<Cinema> cinemaRepository,
             IRepository<Actors> actorsRepository,
             IMovieRepository movieRepository,
-            IRepository<MovieSubImages> movieSubImagesRepository)
+            IRepository<MovieSubImage> movieSubImagesRepository)
         {
             _context = context;
             _categoryRepository = categoryRepository;
@@ -48,7 +51,7 @@ namespace TicketWave.Areas.Admin.Controllers
             return View(new MovieVM
             {
                 categories = categories,
-                cinemas = (IEnumerable<Movie>)cinemas,
+                cinemas = (IEnumerable<Cinema>)cinemas,
                 actors = actors,
             });
         }
@@ -99,10 +102,10 @@ namespace TicketWave.Areas.Admin.Controllers
                     }
                 }
 
-               await _movieRepository.AddAsync(movie, cancellationToken);
-                await _movieRepository.CommitAsync(cancellationToken);
+                _context.movies.Add(movie);
+                await _context.SaveChangesAsync(cancellationToken);
 
-       
+
                 if (SubImgs != null && SubImgs.Count > 0)
                 {
                     var subFolder = Path.Combine(mainFolder, "Movie_images");
@@ -111,23 +114,24 @@ namespace TicketWave.Areas.Admin.Controllers
 
                     foreach (var item in SubImgs)
                     {
-                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(Img.FileName); // 30291jsfd4-210klsdf32-4vsfksgs.png
-                        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images\\product_images", fileName);
+                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(item.FileName);
+                        var filePath = Path.Combine(subFolder, fileName);
 
                         using (var stream = System.IO.File.Create(filePath))
                         {
-                            item.CopyTo(stream);
+                            await item.CopyToAsync(stream);
                         }
 
-                        await _movieSubImagesRepository.AddAsync(new MovieSubImages
+                        await _movieSubImagesRepository.AddAsync(new MovieSubImage
                         {
                             ImagePath = fileName,
-                            Id = movie.Id,
+                            MovieId = movie.Id
                         });
                     }
 
-                    await _context.SaveChangesAsync(cancellationToken);
+                    await _movieSubImagesRepository.CommitAsync(cancellationToken);
                 }
+
 
                 TempData["Notification"] = "Movie created successfully!";
                 return RedirectToAction(nameof(Index));
@@ -146,6 +150,7 @@ namespace TicketWave.Areas.Admin.Controllers
 
 
         [HttpGet]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task<IActionResult> Edit(int id , CancellationToken cancellationToken)
         {
             var Movie = await _movieRepository.GetOneAsync();
@@ -167,6 +172,7 @@ namespace TicketWave.Areas.Admin.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task<IActionResult> Edit(Movie Movie, IFormFile? img , CancellationToken cancellationToken)
         {
             var MovieInDb = await _movieRepository.GetOneAsync((System.Linq.Expressions.Expression<Func<Movie, bool>>?)(e => e.Id == Movie.Id) , tracked : false);
@@ -203,7 +209,7 @@ namespace TicketWave.Areas.Admin.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task<IActionResult> Delete(int id , CancellationToken cancellationToken)
         {
             var Movie = await _movieRepository.GetOneAsync(e => e.Id == id);

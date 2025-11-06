@@ -1,12 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TicketWave.Models;
 using TicketWave.Repositories;
 using TicketWave.Repositories.IRepositories;
+using TicketWave.Utitlies;
 
 namespace TicketWave.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE},{SD.EMPLOYEE_ROLE}")]
     public class CategoryController : Controller
     {
         //ApplicationDbContext _context = new();
@@ -45,6 +48,7 @@ namespace TicketWave.Areas.Admin.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
         {
             var category = await _categoryRepository.GetOneAsync(e => e.Id == id, cancellationToken: cancellationToken);
@@ -56,6 +60,7 @@ namespace TicketWave.Areas.Admin.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task<IActionResult> Edit(Category category, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
@@ -70,7 +75,7 @@ namespace TicketWave.Areas.Admin.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             var category = await _categoryRepository.GetOneAsync(e => e.Id == id, cancellationToken: cancellationToken);

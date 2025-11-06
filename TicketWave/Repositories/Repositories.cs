@@ -54,7 +54,16 @@ namespace TicketWave.Repositories
 
             //entities = entities.Where(e => e.Status);
 
-            return await entities.ToListAsync(cancellationToken);
+            try
+            {
+                return await entities.ToListAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ EF Core Error: {ex.Message}");
+                throw; 
+            }
+
         }
 
         public async Task<T?> GetOneAsync(

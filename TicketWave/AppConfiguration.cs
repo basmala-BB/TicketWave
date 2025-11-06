@@ -1,4 +1,5 @@
 ﻿
+using TicketWave.Utitlies.DBInitilizer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,7 @@ using TicketWave.Areas.Admin.Controllers;
 using TicketWave.Models;
 using TicketWave.Repositories;
 using TicketWave.Repositories.IRepositories;
+using TicketWave.Utitlies;
 
 namespace TicketWave
 {
@@ -25,14 +27,28 @@ namespace TicketWave
                 option.User.RequireUniqueEmail = true;
                 option.Password.RequiredLength = 8;
                 option.Password.RequireNonAlphanumeric = false;
+                option.SignIn.RequireConfirmedEmail = true;
             })
-               .AddEntityFrameworkStores<ApplicationdbContext>();
+               .AddEntityFrameworkStores<ApplicationdbContext>()
+               .AddDefaultTokenProviders();
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.LoginPath = "/Identity/Account/Login"; // Default login path
+                options.AccessDeniedPath = "/Identity/Account/AccessDenied"; // Default access denied path
+            });
+
+
+            services.AddTransient<IEmailSender, EmailSender>();
 
             services.AddScoped<IRepository<Category>, Repository<Category>>();
             services.AddScoped<IRepository<Cinema>, Repository<Cinema>>();
             services.AddScoped<IRepository<Movie>, Repository<Movie>>();
             services.AddScoped<IRepository<MovieSubImage>, Repository<MovieSubImage>>();
+            services.AddScoped<IRepository<Actors>, Repository<Actors>>();
             services.AddScoped<IMovieRepository, MovieRepository>();
+            services.AddScoped<IRepository<ApplicationUserOTP>, Repository<ApplicationUserOTP>>();
+            services.AddScoped<IDBInitializer, DBInitializer>();
+
         }
     }
 }

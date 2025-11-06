@@ -1,13 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using TicketWave.Models;
 using TicketWave.Repositories;
 using TicketWave.Repositories.IRepositories;
+using TicketWave.Utitlies;
 
 namespace TicketWave.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE},{SD.EMPLOYEE_ROLE}")]
     public class ActorsController : Controller
     {
         //private readonly ApplicationdbContext _context = new();
@@ -64,6 +67,7 @@ namespace TicketWave.Areas.Admin.Controllers
         }
         // ================= Edit GET =================
         [HttpGet]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task<IActionResult> Edit(int id , CancellationToken cancellationToken)
         {
             var actor = await _ActorsRepository.GetOneAsync(e => e.Id == id, cancellationToken: cancellationToken);
@@ -78,6 +82,7 @@ namespace TicketWave.Areas.Admin.Controllers
 
         // ================= Edit POST =================
         [HttpPost]
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task<IActionResult> Edit(int id, ActorVM model , CancellationToken cancellationToken)
         {
             var actor = await _ActorsRepository.GetOneAsync(e => e.Id == id, cancellationToken: cancellationToken);
@@ -117,6 +122,7 @@ namespace TicketWave.Areas.Admin.Controllers
         }
 
         // ================= Delete =================
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             var actor = await _ActorsRepository.GetOneAsync(e => e.Id == id, cancellationToken: cancellationToken);

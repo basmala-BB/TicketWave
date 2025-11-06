@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using TicketWave.Areas.Admin.Controllers;
 
 namespace TicketWave.Models
 {
+    [Table("movies")]
     public class Movie
     {
         public int Id { get; set; }
@@ -20,6 +22,7 @@ namespace TicketWave.Models
 
         public int CinemaId { get; set; }
         public Cinema Cinema { get; set; } = null!;
+        public List<MovieSubImage> movieSubImages { get; set; } = new List<MovieSubImage>();
 
         public List<Actors> Actors { get; set; } = new List<Actors>();
     }

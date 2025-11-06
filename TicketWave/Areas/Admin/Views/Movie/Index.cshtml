@@ -1,4 +1,5 @@
 ﻿@using TicketWave.Models
+@using TicketWave.Utitlies
 @model IEnumerable<Movie>
 
 <div class="container">
@@ -66,10 +67,17 @@
                             </td>
 
 
-                            <td>
-                                <a href="/Admin/Movie/Edit/@item.Id" type="button" class="btn btn-warning btn-sm">Edit</a>
-                                <a href="/Admin/Movie/Delete/@item.Id" class="btn btn-danger btn-sm btn-delete">Delete</a>
-                            </td>
+                            @if (User.IsInRole(SD.SUPER_ADMIN_ROLE) || User.IsInRole(SD.ADMIN_ROLE))
+                            {
+                                <td>
+                                    <a href="/Admin/Brand/Edit/@item.Id" type="button" class="btn btn-warning">Edit</a>
+                                    <a href="/Admin/Brand/Delete/@item.Id" class="btn btn-danger btn-delete">Delete</a>
+                                </td>
+                            }
+                            else
+                            {
+                                <td>No Actions!</td>
+                            }
                         </tr>
                     }
                 </tbody>

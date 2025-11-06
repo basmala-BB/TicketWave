@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TicketWave.Models;
 
 #nullable disable
 
-namespace FilmPass.Migrations
+namespace TicketWave.Migrations
 {
     [DbContext(typeof(ApplicationdbContext))]
-    partial class ApplicationdbContextModelSnapshot : ModelSnapshot
+    [Migration("20251104112538_Initial")]
+    partial class Initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -267,6 +270,35 @@ namespace FilmPass.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("TicketWave.Models.ApplicationUserOTP", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ApplicationUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreateAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsValid")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("OTP")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ValidTo")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.ToTable("applicationUserOTPs");
+                });
+
             modelBuilder.Entity("TicketWave.Models.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -317,7 +349,7 @@ namespace FilmPass.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Cinema");
+                    b.ToTable("cinemas");
                 });
 
             modelBuilder.Entity("TicketWave.Models.Movie", b =>
@@ -360,26 +392,10 @@ namespace FilmPass.Migrations
 
                     b.HasIndex("CinemaId");
 
-                    b.ToTable("Movie");
+                    b.ToTable("movies");
                 });
 
-            modelBuilder.Entity("TicketWave.Models.MovieSubImages", b =>
-                {
-                    b.Property<int>("MovieId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ImagePath")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
-                    b.HasKey("MovieId", "ImagePath");
-
-                    b.ToTable("movieSubImages");
-                });
-
-            modelBuilder.Entity("TicketWave.ViewModels.RegisterVM", b =>
+            modelBuilder.Entity("TicketWave.Models.MovieSubImage", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -387,19 +403,33 @@ namespace FilmPass.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ImagePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MovieId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MovieId");
+
+                    b.ToTable("movieSubImages");
+                });
+
+            modelBuilder.Entity("TicketWave.ViewModel.NewPasswordVM", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ApplicationUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ConfirmPassword")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -407,13 +437,30 @@ namespace FilmPass.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserName")
+                    b.HasKey("Id");
+
+                    b.ToTable("NewPasswordVM");
+                });
+
+            modelBuilder.Entity("TicketWave.ViewModel.ValidateOTPVM", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ApplicationUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OTP")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("RegisterVM");
+                    b.ToTable("ValidateOTPVM");
                 });
 
             modelBuilder.Entity("ActorsMovie", b =>
@@ -482,6 +529,17 @@ namespace FilmPass.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("TicketWave.Models.ApplicationUserOTP", b =>
+                {
+                    b.HasOne("TicketWave.Models.ApplicationUser", "ApplicationUser")
+                        .WithMany()
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationUser");
+                });
+
             modelBuilder.Entity("TicketWave.Models.Movie", b =>
                 {
                     b.HasOne("TicketWave.Models.Category", "Category")
@@ -501,15 +559,20 @@ namespace FilmPass.Migrations
                     b.Navigation("Cinema");
                 });
 
-            modelBuilder.Entity("TicketWave.Models.MovieSubImages", b =>
+            modelBuilder.Entity("TicketWave.Models.MovieSubImage", b =>
                 {
                     b.HasOne("TicketWave.Models.Movie", "Movie")
-                        .WithMany()
+                        .WithMany("movieSubImages")
                         .HasForeignKey("MovieId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Movie");
+                });
+
+            modelBuilder.Entity("TicketWave.Models.Movie", b =>
+                {
+                    b.Navigation("movieSubImages");
                 });
 #pragma warning restore 612, 618
         }
