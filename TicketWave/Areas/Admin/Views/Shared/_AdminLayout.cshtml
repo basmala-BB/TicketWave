@@ -82,6 +82,7 @@
               document.querySelector('.navbar-vertical').classList.add(`navbar-${navbarStyle}`);
             }
           </script>
+
           <div class="d-flex align-items-center">
             <div class="toggle-icon-wrapper">
 
@@ -95,12 +96,25 @@
           <div class="collapse navbar-collapse" id="navbarVerticalCollapse">
             <div class="navbar-vertical-content scrollbar">
               <ul class="navbar-nav flex-column mb-3" id="navbarVerticalNav">
+                      <ul class="nav collapse show" id="dashboard">
+                            <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+                        @if(!User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item"><a class="nav-link" href="/Identity/Account/Login">Login</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/Identity/Account/Register">Register</a></li>
+                        }
+                        else
+                        {
+                            <li class="nav-item"><a class="nav-link" href="/Identity/Account/Logout">Logout</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/Identity/Profile">Welcome @User.Identity.Name</a></li>
+                        }
+                    </ul>
                 <li class="nav-item">
                   <!-- parent pages--><a class="nav-link dropdown-indicator" href="#dashboard" role="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="dashboard">
                     <div class="d-flex align-items-center"><span class="nav-link-icon"><span class="fas fa-chart-pie"></span></span><span class="nav-link-text ps-1">Dashboard</span>
                     </div>
                   </a>
-                  <ul class="nav collapse show" id="dashboard">
+              
                     <li class="nav-item"><a class="nav-link" href="~/index.html">
                         <div class="d-flex align-items-center"><span class="nav-link-text ps-1">Default</span>
                         </div>
@@ -193,6 +207,11 @@
                                     <li class="nav-item">
                                         <a class="nav-link" href="/Admin/Movie">
                                             <div class="d-flex align-items-center"><span class="nav-link-text ps-1">Movie</span></div>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="/Admin/User">
+                                            <div class="d-flex align-items-center"><span class="nav-link-text ps-1">User</span></div>
                                         </a>
                                     </li>
                                     <li class="nav-item">
