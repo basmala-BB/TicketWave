@@ -1,9 +1,9 @@
-﻿namespace TicketWave.Models
+﻿namespace TicketWave.ViewModel
 {
     public class ActorVM
     {
         public string Name { get; set; } = string.Empty;
-        public IFormFile? Image { get; set; }          
+        public IFormFile Image { get; set; } = default!;
     }
 
 }

@@ -1,7 +1,6 @@
 ﻿@using TicketWave.Utitlies
 @model IEnumerable<TicketWave.Models.Actors>
 
-
 <div class="container">
 
     <div class="row mb-3 align-items-center my-3">
@@ -9,7 +8,7 @@
             <h2 class="display-6">All Actors</h2>
         </div>
         <div class="col-md-6 text-md-end text-start mt-2 mt-md-0">
-            <a href="/Admin/Actor/Create" class="btn btn-success">Create</a>
+            <a asp-area="Admin" asp-controller="Actors" asp-action="Create" class="btn btn-success">Create</a>
         </div>
     </div>
 
@@ -19,8 +18,9 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th scope="col">id</th>
+                        <th scope="col">Id</th>
                         <th scope="col">Name</th>
+                        <th scope="col">Image</th>
                         <th scope="col">Actions</th>
                     </tr>
                 </thead>
@@ -30,11 +30,21 @@
                         <tr>
                             <th scope="row">@item.Id</th>
                             <td>@item.Name</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.ImagePath))
+                                {
+                                    <img src="~/images/@item.ImagePath" alt="@item.Name" width="80" />
+                                }
+                                else
+                                {
+                                    <span>No Image</span>
+                                }
+                            </td>
                             @if (User.IsInRole(SD.SUPER_ADMIN_ROLE) || User.IsInRole(SD.ADMIN_ROLE))
                             {
                                 <td>
-                                    <a href="/Admin/Brand/Edit/@item.Id" type="button" class="btn btn-warning">Edit</a>
-                                    <a href="/Admin/Brand/Delete/@item.Id" class="btn btn-danger btn-delete">Delete</a>
+                                    <a asp-area="Admin" asp-controller="Actors" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning">Edit</a>
+                                    <a asp-area="Admin" asp-controller="Actors" asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-delete">Delete</a>
                                 </td>
                             }
                             else
@@ -70,9 +80,9 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         Swal.fire({
-                          title: "Deleted!",
-                          text: "Your file has been deleted.",
-                          icon: "success"
+                            title: "Deleted!",
+                            text: "Your file has been deleted.",
+                            icon: "success"
                         });
 
                         // Redirect to delete URL
@@ -84,11 +94,12 @@
     });
 </script>
 
-@section Scripts {
+
+@* @section Scripts {
 
     <partial name="_NotificationPartial">
 
-}
+} *@
 
 
 

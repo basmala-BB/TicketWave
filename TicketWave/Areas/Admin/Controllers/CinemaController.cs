@@ -23,11 +23,12 @@ namespace FilmPass.Areas.Admin.Controllers
             _cinemaRepository = cinemaRepository;
         }
 
-        public IActionResult Index(CancellationToken cancellationToken)
+        public async Task<IActionResult> Index(CancellationToken cancellationToken)
         {
-            var cinemas = _cinemaRepository.GetOneAsync(tracked: false, cancellationToken: cancellationToken);
+            var cinemas = await _cinemaRepository.GetAsync(tracked: false, cancellationToken: cancellationToken);
             return View(cinemas);
         }
+
         [HttpGet]
         public IActionResult Create()
         {

@@ -1,4 +1,6 @@
-﻿namespace TicketWave.Models
+﻿using TicketWave.Models;
+
+namespace TicketWave.ViewModel
 {
     public class MovieVM
     {

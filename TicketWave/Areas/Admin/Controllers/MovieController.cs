@@ -6,6 +6,7 @@ using TicketWave.Models;
 using TicketWave.Repositories;
 using TicketWave.Repositories.IRepositories;
 using TicketWave.Utitlies;
+using TicketWave.ViewModel;
 
 namespace TicketWave.Areas.Admin.Controllers
 {

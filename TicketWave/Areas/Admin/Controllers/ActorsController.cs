@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Magnum.FileSystem;
+using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
@@ -6,6 +8,8 @@ using TicketWave.Models;
 using TicketWave.Repositories;
 using TicketWave.Repositories.IRepositories;
 using TicketWave.Utitlies;
+using TicketWave.ViewModel;
+using Directory = System.IO.Directory;
 
 namespace TicketWave.Areas.Admin.Controllers
 {
@@ -37,34 +41,50 @@ namespace TicketWave.Areas.Admin.Controllers
 
         // ================= Create POST =================
         [HttpPost]
-        public async Task<IActionResult> Create(ActorVM model , CancellationToken cancellationToken)
+        public async Task<IActionResult> Create(ActorVM actorVM, CancellationToken cancellationToken)
         {
-            if (!ModelState.IsValid) return View(model);
-
-            string fileName = "";
-            if (model.Image != null && model.Image.Length > 0)
+            try
             {
-                var imagesFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
-                if (!Directory.Exists(imagesFolder))
-                    Directory.CreateDirectory(imagesFolder);
+                if (!ModelState.IsValid)
+                    return View(actorVM);
 
-                fileName = Guid.NewGuid() + Path.GetExtension(model.Image.FileName);
-                var filePath = Path.Combine(imagesFolder, fileName);
+                Actors actors = new Actors
+                {
+                    Name = actorVM.Name
+                };
 
-                using var stream = new FileStream(filePath, FileMode.Create);
-                model.Image.CopyTo(stream);
+                if (actorVM.Image is not null && actorVM.Image.Length > 0)
+                {
+                    var imagesPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
+                    if (!Directory.Exists(imagesPath))
+                        Directory.CreateDirectory(imagesPath);
+
+                    var fileName = Guid.NewGuid() + Path.GetExtension(actorVM.Image.FileName);
+                    var filePath = Path.Combine(imagesPath, fileName);
+
+                    using var stream = new FileStream(filePath, FileMode.Create);
+                    await actorVM.Image.CopyToAsync(stream, cancellationToken);
+
+                    actors.ImagePath = fileName;
+                }
+
+                await _ActorsRepository.AddAsync(actors, cancellationToken);
+                await _ActorsRepository.CommitAsync(cancellationToken);
+
+                TempData["success-notification"] = "Actor added successfully";
+                return RedirectToAction(nameof(Index));
             }
-
-            await _ActorsRepository.AddAsync(new Actors
+            catch (Exception ex)
             {
-                Name = model.Name,
-                ImagePath = fileName
-            }, cancellationToken);
-           await _ActorsRepository.CommitAsync(cancellationToken);
-
-            TempData["Notification"] = "Actor added successfully!";
-            return RedirectToAction("Index");
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                ModelState.AddModelError(string.Empty, "حدث خطأ أثناء حفظ الممثل.");
+                return View(actorVM);
+            }
         }
+
+
+
         // ================= Edit GET =================
         [HttpGet]
         [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
@@ -83,38 +103,38 @@ namespace TicketWave.Areas.Admin.Controllers
         // ================= Edit POST =================
         [HttpPost]
         [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
-        public async Task<IActionResult> Edit(int id, ActorVM model , CancellationToken cancellationToken)
+        public async Task<IActionResult> Edit(int id, ActorVM actorVM, CancellationToken cancellationToken)
         {
-            var actor = await _ActorsRepository.GetOneAsync(e => e.Id == id, cancellationToken: cancellationToken);
-            if (actor == null) return NotFound();
+            var actors = await _ActorsRepository.GetOneAsync(e => e.Id == id, cancellationToken: cancellationToken);
+            if (actors == null) return NotFound();
 
             if (!ModelState.IsValid)
-                return View(model);
+                return View(actorVM);
 
-            actor.Name = model.Name;
+            actors.Name = actorVM.Name;
 
-            if (model.Image != null && model.Image.Length > 0)
+            if (actorVM.Image != null && actorVM.Image.Length > 0)
             {
                 var imagesFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
                 if (!Directory.Exists(imagesFolder))
                     Directory.CreateDirectory(imagesFolder);
 
-                var fileName = Guid.NewGuid() + Path.GetExtension(Path.GetFileName(model.Image.FileName));
+                var fileName = Guid.NewGuid() + Path.GetExtension(Path.GetFileName(actorVM.Image.FileName));
                 var filePath = Path.Combine(imagesFolder, fileName);
 
                 using var stream = new FileStream(filePath, FileMode.Create);
-                model.Image.CopyTo(stream);
+                actorVM.Image.CopyTo(stream);
 
-                if (!string.IsNullOrEmpty(actor.ImagePath))
+                if (!string.IsNullOrEmpty(actors.ImagePath))
                 {
-                    var oldPath = Path.Combine(imagesFolder, actor.ImagePath);
+                    var oldPath = Path.Combine(imagesFolder, actors.ImagePath);
                     if (System.IO.File.Exists(oldPath))
                         System.IO.File.Delete(oldPath);
                 }
 
-                actor.ImagePath = fileName;
+                actors.ImagePath = fileName;
             }
-            _ActorsRepository.Update(actor);
+            _ActorsRepository.Update(actors);
             await _ActorsRepository.CommitAsync(cancellationToken);
 
             TempData["Notification"] = "Actor updated successfully!";

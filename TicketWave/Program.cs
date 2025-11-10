@@ -21,25 +21,21 @@ public class Program
 
         var app = builder.Build();
 
-        using (var scope = app.Services.CreateScope())
-        {
-            var service = scope.ServiceProvider.GetService<IDBInitializer>();
-            service!.Initialize();
-        }
+        var scope = app.Services.CreateScope();
+        var service = scope.ServiceProvider.GetService<IDBInitializer>();
+        service!.Initialize();
 
         if (!app.Environment.IsDevelopment())
         {
             app.UseExceptionHandler("/Home/Error");
             app.UseHsts();
         }
-
         app.UseHttpsRedirection();
-        app.UseStaticFiles();
-
         app.UseRouting();
 
-        app.UseAuthentication();
         app.UseAuthorization();
+
+        app.MapStaticAssets();
 
         app.MapControllerRoute(
             name: "areas",
