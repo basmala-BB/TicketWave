@@ -25,7 +25,7 @@
 
 
   <ItemGroup>
-    <Folder Include="wwwroot\images\Movie\" />
+    <Folder Include="wwwroot\images\movie_images\" />
     <Folder Include="wwwroot\pages\images\Cinema_images\" />
   </ItemGroup>
 

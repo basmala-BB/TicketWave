@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using TicketWave.Models;
+using TicketWave.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Threading;
 using System.Threading.Tasks;
-using TicketWave.Models;
-using TicketWave.Repositories;
 using TicketWave.Repositories.IRepositories;
 using TicketWave.Utitlies;
 using TicketWave.ViewModel;
@@ -14,74 +15,101 @@ namespace TicketWave.Areas.Admin.Controllers
     [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE},{SD.EMPLOYEE_ROLE}")]
     public class MovieController : Controller
     {
-
         private readonly ApplicationdbContext _context;
+        private readonly IMovieRepository _movieRepository;
         private readonly IRepository<Category> _categoryRepository;
         private readonly IRepository<Cinema> _cinemaRepository;
-        private readonly IRepository<Actors> _ActorsRepository;
-        private readonly IMovieRepository _movieRepository;
-        private readonly IRepository<MovieSubImage> _movieSubImagesRepository;
+        private readonly IRepository<Actors> _actorRepository;
+        private readonly IRepository<MovieSubImage> _movieSubImageRepository;
+        private readonly IRepository<MovieActor> _movieActorRepository;
 
         public MovieController(
-            ApplicationdbContext context,
+             ApplicationdbContext context,
+            IMovieRepository movieRepository,
             IRepository<Category> categoryRepository,
             IRepository<Cinema> cinemaRepository,
-            IRepository<Actors> actorsRepository,
-            IMovieRepository movieRepository,
-            IRepository<MovieSubImage> movieSubImagesRepository)
+            IRepository<Actors> actorRepository,
+            IRepository<MovieSubImage> movieSubImageRepository,
+            IRepository<MovieActor> movieActorRepository)
         {
             _context = context;
+            _movieRepository = movieRepository;
             _categoryRepository = categoryRepository;
             _cinemaRepository = cinemaRepository;
-            _ActorsRepository = actorsRepository;
-            _movieRepository = movieRepository;
-            _movieSubImagesRepository = movieSubImagesRepository;
+            _movieSubImageRepository = movieSubImageRepository;
+            _movieActorRepository = movieActorRepository;
         }
-        public async Task<IActionResult> Index()
+
+        public async Task<IActionResult> Index(FilterMovieVM filterMovieVM, CancellationToken cancellationToken, int page = 1)
         {
-            var movies = await _movieRepository.GetAsync(tracked: false);
+            var movies = await _movieRepository.GetAsync(includes: [e => e.Category, e => e.Cinema], tracked: false, cancellationToken: cancellationToken);
+
+            #region Filter Movie
+            if (!string.IsNullOrEmpty(filterMovieVM.Title))
+            {
+                movies = movies.Where(e => e.Name.Contains(filterMovieVM.Title.Trim()));
+                ViewBag.Title = filterMovieVM.Title;
+            }
+
+            if (filterMovieVM.CategoryId != null)
+            {
+                movies = movies.Where(e => e.CategoryId == filterMovieVM.CategoryId);
+                ViewBag.CategoryId = filterMovieVM.CategoryId;
+            }
+
+            if (filterMovieVM.CinemaId != null)
+            {
+                movies = movies.Where(e => e.CinemaId == filterMovieVM.CinemaId);
+                ViewBag.CinemaId = filterMovieVM.CinemaId;
+            }
+            //if (filterMovieVM.ActorId != null)
+            //{
+            //    movies = movies.Where(e => e.MovieActors == filterMovieVM.ActorId);
+            //    ViewBag.ActorId = filterMovieVM.ActorId;
+            //}
+
+            var categories = await _categoryRepository.GetAsync(cancellationToken: cancellationToken);
+            ViewBag.Categories = categories.AsEnumerable();
+
+            var cinemas = await _cinemaRepository.GetAsync(cancellationToken: cancellationToken);
+            ViewBag.Cinemas = cinemas.AsEnumerable();
+            #endregion
+
+            #region Pagination
+            ViewBag.TotalPages = Math.Ceiling(movies.Count() / 8.0);
+            ViewBag.CurrentPage = page;
+            movies = movies.Skip((page - 1) * 8).Take(8);
+            #endregion
+
             return View(movies.AsEnumerable());
         }
 
         [HttpGet]
         public async Task<IActionResult> Create(CancellationToken cancellationToken)
         {
-            var categories = await _categoryRepository.GetAsync();
-            var cinemas = await _cinemaRepository.GetAsync();
-            var actors = await _ActorsRepository.GetAsync();
-            return View(new MovieVM
+            var categories = await _categoryRepository.GetAsync(cancellationToken : cancellationToken) ?? new List<Category>();
+            var cinemas = await _cinemaRepository.GetAsync(cancellationToken: cancellationToken) ?? new List<Cinema>();
+            var actors = await _actorRepository.GetAsync(cancellationToken: cancellationToken) ?? new List<Actors>();
+
+            var model = new MovieVM
             {
-                categories = categories,
-                cinemas = (IEnumerable<Cinema>)cinemas,
+                Categories = categories,
+                cinemas = cinemas,
                 actors = actors,
-            });
+            };
+
+            return View(model);
         }
 
         [HttpPost]
-    
-        public async Task<IActionResult> Create(MovieVM model, IFormFile Img, List<IFormFile>? SubImgs , CancellationToken cancellationToken)
+        public async Task<IActionResult> Create(Movie movie, IFormFile Img, List<IFormFile>? subImgs, int[] actorIds, CancellationToken cancellationToken)
         {
+            var transaction = _context.Database.BeginTransaction();
             try
             {
-                if (!ModelState.IsValid)
+                if (Img != null && Img.Length > 0)
                 {
-                    model.categories = await _context.categories.ToListAsync(cancellationToken);
-                    model.cinemas = await _context.cinemas.ToListAsync(cancellationToken);
-                    model.actors = await _context.actors.ToListAsync(cancellationToken);
-                    return View(model);
-                }
-
-               
-                var mainFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
-                if (!Directory.Exists(mainFolder))
-                    Directory.CreateDirectory(mainFolder);
-
-                var movie = model.Movie;
-
-                if (Img is not null && Img.Length > 0)
-                {
-                    // Save Img in wwwroot
-                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(Img.FileName); // 30291jsfd4-210klsdf32-4vsfksgs.png
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(Img.FileName);
                     var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images", fileName);
 
                     using (var stream = System.IO.File.Create(filePath))
@@ -89,148 +117,175 @@ namespace TicketWave.Areas.Admin.Controllers
                         Img.CopyTo(stream);
                     }
 
-                    // Save Img in db
                     movie.MainImg = fileName;
                 }
 
-                if (model.ActorsIds != null && model.ActorsIds.Any())
+                var movieCreated = await _movieRepository.AddAsync(movie, cancellationToken);
+                await _movieRepository.CommitAsync(cancellationToken);
+
+                if (subImgs != null && subImgs.Count > 0)
                 {
-                    foreach (var actorId in model.ActorsIds)
-                    {
-                        var actor = _context.actors.Find(actorId);
-                        if (actor != null)
-                            movie.Actors.Add(actor);
-                    }
-                }
-
-                _context.movies.Add(movie);
-                await _context.SaveChangesAsync(cancellationToken);
-
-
-                if (SubImgs != null && SubImgs.Count > 0)
-                {
-                    var subFolder = Path.Combine(mainFolder, "Movie_images");
-                    if (!Directory.Exists(subFolder))
-                        Directory.CreateDirectory(subFolder);
-
-                    foreach (var item in SubImgs)
+                    foreach (var item in subImgs)
                     {
                         var fileName = Guid.NewGuid().ToString() + Path.GetExtension(item.FileName);
-                        var filePath = Path.Combine(subFolder, fileName);
+                        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images\\movie_images", fileName);
 
                         using (var stream = System.IO.File.Create(filePath))
                         {
-                            await item.CopyToAsync(stream);
+                            item.CopyTo(stream);
                         }
 
-                        await _movieSubImagesRepository.AddAsync(new MovieSubImage
+                        await _movieSubImageRepository.AddAsync(new()
                         {
                             ImagePath = fileName,
-                            MovieId = movie.Id
-                        });
+                            MovieId = movieCreated.Id,
+                        }, cancellationToken);
                     }
-
-                    await _movieSubImagesRepository.CommitAsync(cancellationToken);
+                    await _movieSubImageRepository.CommitAsync(cancellationToken);
                 }
 
+                if (actorIds.Any())
+                {
+                    foreach (var actorId in actorIds)
+                    {
+                        await _movieActorRepository.AddAsync(new()
+                        {
+                            ActorId = actorId,
+                            MovieId = movieCreated.Id,
+                        }, cancellationToken);
+                    }
+                    await _movieActorRepository.CommitAsync(cancellationToken);
+                }
 
-                TempData["Notification"] = "Movie created successfully!";
-                return RedirectToAction(nameof(Index));
+                TempData["success-notification"] = "Add Movie Successfully";
+                transaction.Commit();
             }
-            catch (Exception ex)
+            catch
             {
-                TempData["Error"] = $"❌ Error: {ex.Message} | Inner: {ex.InnerException?.Message}";
-                model.categories = _context.categories.ToList();
-                model.cinemas = _context.cinemas.ToList();
-                model.actors = _context.actors.ToList();
-                return View(model);
+                TempData["error-notification"] = "Error While Saving the movie";
+                transaction.Rollback();
             }
 
+            return RedirectToAction(nameof(Index));
         }
-
-
 
         [HttpGet]
         [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
-        public async Task<IActionResult> Edit(int id , CancellationToken cancellationToken)
+        public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
         {
-            var Movie = await _movieRepository.GetOneAsync();
-
-            if (Movie is null)
+            var movie = await _movieRepository.GetOneAsync(e => e.Id == id, includes: [e => e.movieSubImages, e => e.MovieActor], tracked: false, cancellationToken: cancellationToken);
+            if (movie == null)
                 return RedirectToAction("NotFoundPage", "Home");
 
-       
-            var categories = _context.categories;
-      
-            var cinemas = _context.cinemas;
+            var categories = await _categoryRepository.GetAsync(cancellationToken: cancellationToken);
+            var cinemas = await _cinemaRepository.GetAsync(cancellationToken: cancellationToken);
 
             return View(new MovieVM
             {
-                categories = categories.AsEnumerable(),
+                Categories = categories.AsEnumerable(),
                 cinemas = cinemas.AsEnumerable(),
-                Movie = Movie,
+                movie = movie,
             });
         }
 
         [HttpPost]
         [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
-        public async Task<IActionResult> Edit(Movie Movie, IFormFile? img , CancellationToken cancellationToken)
+        public async Task<IActionResult> Edit(Movie movie, IFormFile? Img, List<IFormFile>? subImgs, int[] actorIds, CancellationToken cancellationToken)
         {
-            var MovieInDb = await _movieRepository.GetOneAsync((System.Linq.Expressions.Expression<Func<Movie, bool>>?)(e => e.Id == Movie.Id) , tracked : false);
-            if (MovieInDb is null)
+            var movieInDb = await _movieRepository.GetOneAsync(e => e.Id == movie.Id, includes: [e => e.MovieActor], tracked: false, cancellationToken: cancellationToken);
+            if (movieInDb == null)
                 return RedirectToAction("NotFoundPage", "Home");
 
-            if (img is not null)
+            if (Img != null && Img.Length > 0)
             {
-                if (img.Length > 0)
-                {                 
-                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(img.FileName); 
-                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images", fileName);
-                    using (var stream = System.IO.File.Create(filePath))
-                    {
-                        img.CopyTo(stream);
-                    }                  
-                    var oldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images", MovieInDb.MainImg);
-                    if (System.IO.File.Exists(oldPath))
-                    {
-                        System.IO.File.Delete(oldPath);
-                    }                   
-                    Movie.MainImg = fileName;
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(Img.FileName);
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images", fileName);
+
+                using (var stream = System.IO.File.Create(filePath))
+                {
+                    Img.CopyTo(stream);
                 }
+
+                var oldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images", movieInDb.MainImg);
+                if (System.IO.File.Exists(oldPath))
+                    System.IO.File.Delete(oldPath);
+
+                movie.MainImg = fileName;
             }
             else
             {
-                Movie.MainImg = MovieInDb.MainImg;
+                movie.MainImg = movieInDb.MainImg;
             }
 
-             _movieRepository.Update(Movie);
-            _movieRepository.Delete(Movie);
+            _movieRepository.Update(movie);
+            await _movieRepository.CommitAsync(cancellationToken);
 
-            TempData["Notification"] = "Update Movie Successfully";
+            if (subImgs != null && subImgs.Count > 0)
+            {
+                movie.movieSubImages = new List<MovieSubImage>();
+                foreach (var item in subImgs)
+                {
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(item.FileName);
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images\\movie_images", fileName);
 
+                    using (var stream = System.IO.File.Create(filePath))
+                    {
+                        item.CopyTo(stream);
+                    }
+
+                    movie.movieSubImages.Add(new()
+                    {
+                        ImagePath = fileName,
+                        MovieId = movie.Id,
+                    });
+                }
+                await _movieSubImageRepository.CommitAsync(cancellationToken);
+            }
+
+            TempData["success-notification"] = "Update Movie Successfully";
             return RedirectToAction(nameof(Index));
         }
-        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
-        public async Task<IActionResult> Delete(int id , CancellationToken cancellationToken)
-        {
-            var Movie = await _movieRepository.GetOneAsync(e => e.Id == id);
 
-            if (Movie is null)
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
+        public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+        {
+            var movie = await _movieRepository.GetOneAsync(e => e.Id == id, includes: [e => e.movieSubImages, e => e.MovieActor], tracked: false, cancellationToken: cancellationToken);
+            if (movie == null)
                 return RedirectToAction("NotFoundPage", "Home");
 
-            
-            var oldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images", (string)Movie.MainImg);
+            var oldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images", movie.MainImg);
             if (System.IO.File.Exists(oldPath))
-            {
                 System.IO.File.Delete(oldPath);
+
+            foreach (var subImg in movie.movieSubImages)
+            {
+                var subImgPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images\\movie_images", subImg.ImagePath);
+                if (System.IO.File.Exists(subImgPath))
+                    System.IO.File.Delete(subImgPath);
             }
 
-            _movieRepository.Delete((Movie)Movie);
-           await _movieRepository.CommitAsync(cancellationToken);
+            _movieRepository.Delete(movie);
+            await _movieRepository.CommitAsync(cancellationToken);
 
-            TempData["Notification"] = "Delete Movie Successfully";
-
+            TempData["success-notification"] = "Delete Movie Successfully";
             return RedirectToAction(nameof(Index));
+        }
+
+        [Authorize(Roles = $"{SD.SUPER_ADMIN_ROLE},{SD.ADMIN_ROLE}")]
+        public async Task<IActionResult> DeleteSubImg(int movieId, string Img, CancellationToken cancellationToken)
+        {
+            var movieSubImg = await _movieSubImageRepository.GetOneAsync(e => e.MovieId == movieId && e.ImagePath == Img);
+            if (movieSubImg == null)
+                return RedirectToAction("NotFoundPage", "Home");
+
+            var oldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images\\movie_images", movieSubImg.ImagePath);
+            if (System.IO.File.Exists(oldPath))
+                System.IO.File.Delete(oldPath);
+
+            _movieSubImageRepository.Delete(movieSubImg);
+            await _movieSubImageRepository.CommitAsync(cancellationToken);
+
+            return RedirectToAction(nameof(Edit), new { id = movieId });
         }
     }
 }

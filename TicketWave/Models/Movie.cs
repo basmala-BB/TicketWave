@@ -22,8 +22,9 @@ namespace TicketWave.Models
 
         public int CinemaId { get; set; }
         public Cinema Cinema { get; set; } = null!;
-        public List<MovieSubImage> movieSubImages { get; set; } = new List<MovieSubImage>();
 
-        public List<Actors> Actors { get; set; } = new List<Actors>();
+        public List<MovieSubImage> movieSubImages { get; set; } = new List<MovieSubImage>();
+        public ICollection<MovieActor> MovieActor { get; set; } = new List<MovieActor>();
     }
+
 }

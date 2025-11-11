@@ -35,6 +35,29 @@ public DbSet<TicketWave.ViewModel.ValidateOTPVM> ValidateOTPVM { get; set; } = d
 
 public DbSet<TicketWave.ViewModel.NewPasswordVM> NewPasswordVM { get; set; } = default!;
 
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        // المفتاح المركب للجدول الوسيط
+        modelBuilder.Entity<MovieActor>()
+            .HasKey(ma => new { ma.MovieId, ma.ActorId });
+
+        // علاقة Movie ↔ MovieActor
+        modelBuilder.Entity<MovieActor>()
+            .HasOne(ma => ma.Movie)
+            .WithMany(m => m.MovieActor) // خلي اسم Collection في Movie: MovieActors
+            .HasForeignKey(ma => ma.MovieId)
+            .OnDelete(DeleteBehavior.Cascade); // أو DeleteBehavior.NoAction لتجنب multiple cascade paths
+
+        // علاقة Actor ↔ MovieActor
+        modelBuilder.Entity<MovieActor>()
+            .HasOne(ma => ma.Actor)
+            .WithMany(a => a.MovieActors) // خلي اسم Collection في Actors: MovieActors
+            .HasForeignKey(ma => ma.ActorId)
+            .OnDelete(DeleteBehavior.Cascade); // أو NoAction
+    }
+
 
 }
 

@@ -1,5 +1,5 @@
-﻿@using TicketWave.Models
-@model MovieVM
+﻿@model MovieVM
+
 
 <div class="container">
     <div class="row mb-3 align-items-center my-3">
@@ -11,57 +11,58 @@
     <div class="row my-3">
         <div class="col-12">
             <form method="post" enctype="multipart/form-data">
-                <input type="hidden" name="Id" value="@Model.Movie.Id" />
-
                 <div class="mb-3">
-                    <label for="name" class="form-label">Movie Name</label>
-                    <input class="form-control" name="Name" value="@Model.Movie.Name" required />
+                    <label for="Title" class="form-label">Title</label>
+                    <input class="form-control" name="Title" value="@Model.movie!.Name">
                 </div>
 
                 <div class="mb-3">
-                    <label for="Img" class="form-label">Main Image</label>
-                    <input type="file" class="form-control" id="Img" name="Img" accept="image/*" onchange="previewImage(event)" />
+                    <label for="Img" class="form-label">Main Img</label>
+                    <input type="file" class="form-control" id="Img" name="Img" accept="image/*" onchange="previewImage(event)">
                 </div>
 
                 <div class="mb-3">
                     <img id="preview"
-                         src="~/images/@Model.Movie.MainImg"
+                         src="~/images/@Model.movie.MainImg"
                          alt="Current Image"
                          style="max-width: 200px; border:1px solid #ccc; padding:5px; border-radius:10px;" />
                 </div>
 
                 <div class="mb-3">
-                    <label for="description" class="form-label">Description</label>
+                    <label for="SubImgs" class="form-label">Sub Images</label>
+                    <input type="file" class="form-control" id="SubImgs" name="SubImgs" accept="image/*" multiple>
+                </div>
+
+                @if(Model.movie.movieSubImages.Any())
+                {
+                    foreach(var item in Model.movie.movieSubImages)
+                    {
+                        <div class="mb-3" style="position:relative; display: inline-block">
+                            <img src="~/images/Movie_images/@item.ImagePath"
+                                 alt="Current Sub Image"
+                                 style="width: 150px; border:1px solid #ccc; padding:5px; border-radius:10px;" />
+
+                            <a href="/Admin/Movie/DeleteSubImg?movieId=@Model.movie.Id&Img=@item.ImagePath" id="addButtonColor" class="btn btn-sm btn-danger"
+                               class="btn btn-sm btn-danger"
+                               style="position: absolute; top: 5px; right: 5px">X</a>
+                        </div>
+                    }
+                }
+
+                <div class="mb-3">
+                    <label for="Description" class="form-label">Description</label>
                     <div class="form-floating">
-                        <textarea class="form-control" placeholder="Movie description..." style="height: 100px" name="Description">@Model.Movie.Description</textarea>
-                        <label for="description">Movie Description...</label>
+                        <textarea class="form-control" placeholder="Leave a description here" style="height: 100px" name="Description">@Model.movie.Description</textarea>
+                        <label for="Description">Your Description Here...</label>
                     </div>
-                </div>
-
-                <div class="mb-3">
-                    <label for="price" class="form-label">Price</label>
-                    <input type="number" step="0.01" class="form-control" name="Price" value="@Model.Movie.price" />
-                </div>
-
-                <div class="mb-3">
-                    <label for="dateTime" class="form-label">Release Date</label>
-                    <input type="datetime-local" class="form-control" name="DateTime"
-                           value="@Model.Movie.DateTime.ToString("yyyy-MM-ddTHH:mm")" />
                 </div>
 
                 <div class="mb-3">
                     <label for="CategoryId" class="form-label">Category</label>
                     <select name="CategoryId" class="form-select">
-                        @foreach (var item in Model.categories)
+                        @foreach (var item in Model.Categories)
                         {
-                            if (item.Id == Model.Movie.CategoryId)
-                            {
-                                <option value="@item.Id" selected>@item.Name</option>
-                            }
-                            else
-                            {
-                                <option value="@item.Id">@item.Name</option>
-                            }
+                            <option value="@item.Id" selected>@item.Name</option>
                         }
                     </select>
                 </div>
@@ -71,35 +72,41 @@
                     <select name="CinemaId" class="form-select">
                         @foreach (var item in Model.cinemas)
                         {
-                            if (item.Id == Model.Movie.CinemaId)
+                            <option value="@item.Id" selected>@item.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="ActorId" class="form-label">Actor</label>
+                    <select name="ActorId" class="form-select">
+                        @if (Model.actors != null)
+                        {
+                            @foreach (var actor in Model.actors)
                             {
-                                <option value="@item.Id" selected>@item.Name</option>
-                            }
-                            else
-                            {
-                                <option value="@item.Id">@item.Name</option>
+                                <option value="@actor.Id">@actor.Name</option>
                             }
                         }
                     </select>
                 </div>
+
 
                 <div class="mb-3">
                     <label for="status" class="form-label">Status</label>
                     <select name="Status" class="form-select">
-                        @if (Model.Movie.status)
+                        @if (Model.movie.status)
                         {
                             <option value="true" selected>Active</option>
-                            <option value="false">Inactive</option>
+                            <option value="false">InActive</option>
                         }
                         else
                         {
                             <option value="true">Active</option>
-                            <option value="false" selected>Inactive</option>
+                            <option value="false" selected>InActive</option>
                         }
+
                     </select>
                 </div>
-
-                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <button type="submit" class="btn btn-primary">Submit</button>
             </form>
         </div>
     </div>
@@ -112,8 +119,8 @@
 
         if (input.files && input.files[0]) {
             const reader = new FileReader();
-            reader.onload = function (e) {
-                preview.src = e.target.result;
+            reader.onload = function(e) {
+                preview.src = e.target.result; 
             }
             reader.readAsDataURL(input.files[0]);
         }
