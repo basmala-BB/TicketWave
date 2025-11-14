@@ -1,8 +1,9 @@
-﻿using TicketWave.Models;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using TicketWave.ViewModels;
+using TicketWave.DataAccess.EntityConfigurations;
+using TicketWave.Models;
 using TicketWave.ViewModel;
+using TicketWave.ViewModels;
 
 namespace TicketWave.Models;
 
@@ -23,6 +24,8 @@ public class ApplicationdbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Cinema> cinemas { get; set; }
     public DbSet<MovieSubImage> movieSubImages { get; set; }
     public DbSet<ApplicationUserOTP> applicationUserOTPs { get; set; }
+    public DbSet<Cart> carts { get; set; }
+    public DbSet<Promotion> promotions { get; set; }
 
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -39,6 +42,9 @@ public DbSet<TicketWave.ViewModel.NewPasswordVM> NewPasswordVM { get; set; } = d
     {
         base.OnModelCreating(modelBuilder);
 
+        // المفتاح المركب ل Cart
+        modelBuilder.ApplyConfiguration(new CartEntityTypeConfiguration());
+
         // المفتاح المركب للجدول الوسيط
         modelBuilder.Entity<MovieActor>()
             .HasKey(ma => new { ma.MovieId, ma.ActorId });
@@ -48,14 +54,14 @@ public DbSet<TicketWave.ViewModel.NewPasswordVM> NewPasswordVM { get; set; } = d
             .HasOne(ma => ma.Movie)
             .WithMany(m => m.MovieActor) // خلي اسم Collection في Movie: MovieActors
             .HasForeignKey(ma => ma.MovieId)
-            .OnDelete(DeleteBehavior.Cascade); // أو DeleteBehavior.NoAction لتجنب multiple cascade paths
+            .OnDelete(DeleteBehavior.Cascade);
 
         // علاقة Actor ↔ MovieActor
         modelBuilder.Entity<MovieActor>()
             .HasOne(ma => ma.Actor)
-            .WithMany(a => a.MovieActors) // خلي اسم Collection في Actors: MovieActors
+            .WithMany(a => a.MovieActors)
             .HasForeignKey(ma => ma.ActorId)
-            .OnDelete(DeleteBehavior.Cascade); // أو NoAction
+            .OnDelete(DeleteBehavior.Cascade);
     }
 
 

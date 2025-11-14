@@ -89,13 +89,13 @@ namespace TicketWave.Areas.Admin.Controllers
         {
             var categories = await _categoryRepository.GetAsync(cancellationToken : cancellationToken) ?? new List<Category>();
             var cinemas = await _cinemaRepository.GetAsync(cancellationToken: cancellationToken) ?? new List<Cinema>();
-            var actors = await _actorRepository.GetAsync(cancellationToken: cancellationToken) ?? new List<Actors>();
+            //var actors = await _actorRepository.GetAsync(cancellationToken: cancellationToken) ?? new List<Actors>();
 
             var model = new MovieVM
             {
                 Categories = categories,
                 cinemas = cinemas,
-                actors = actors,
+                //actors = actors,
             };
 
             return View(model);

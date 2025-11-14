@@ -1,33 +1,40 @@
 ﻿@model TicketWave.ViewModel.ValidateOTPVM
 
 @{
-    ViewData["Title"] = "ValidateOTP";
+    ViewData["Title"] = "Validate OTP";
 }
 
-<div class="container">
-    <h1>ValidateOTP</h1>
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="card shadow-sm" style="width: 400px;">
+        <div class="card-body">
+            <h3 class="card-title text-center mb-4">تحقق من OTP</h3>
+            <p class="text-center text-muted mb-4">ادخل الرمز المرسل لهاتفك أو بريدك الإلكتروني</p>
 
-    <h4>ValidateOTPVM</h4>
-    <hr />
-    <div class="row">
-        <div class="col-md-12">
             <form asp-action="ValidateOTP">
                 <input type="hidden" name="ApplicationUserId" value="@Model.ApplicationUserId" />
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <div class="form-group">
-                    <label asp-for="OTP" class="control-label"></label>
-                    <input asp-for="OTP" class="form-control" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="OTP" class="form-label"></label>
+                    <input asp-for="OTP" class="form-control form-control-lg text-center" placeholder="XXXX" />
                     <span asp-validation-for="OTP" class="text-danger"></span>
                 </div>
-                <div class="form-group mt-3">
-                    <input type="submit" value="Create" class="btn btn-primary" />
+
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">تأكيد</button>
+                </div>
+
+                <div class="text-center mt-3">
+                    <a asp-action="ResendOTP" class="text-decoration-none">إعادة إرسال الرمز</a>
                 </div>
             </form>
         </div>
     </div>
-
-
 </div>
+
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

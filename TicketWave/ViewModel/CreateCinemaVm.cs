@@ -11,6 +11,6 @@ namespace TicketWave.ViewModel
         [MaxLength(1000)]
         public string? Description { get; set; }
         public bool Status { get; set; }
-        public IFormFile ImagePath  { get; set; } = default!;
+        public IFormFile Path  { get; set; } = default!;
     }
 }

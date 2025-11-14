@@ -281,6 +281,27 @@ namespace TicketWave.Migrations
                     b.ToTable("applicationUserOTPs");
                 });
 
+            modelBuilder.Entity("TicketWave.Models.Cart", b =>
+                {
+                    b.Property<int>("MovieId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Count")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("MovieId", "ApplicationUserId");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.ToTable("carts");
+                });
+
             modelBuilder.Entity("TicketWave.Models.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -354,6 +375,9 @@ namespace TicketWave.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal>("Discount")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("MainImg")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -361,6 +385,12 @@ namespace TicketWave.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("Rate")
+                        .HasColumnType("float");
+
+                    b.Property<long>("Traffic")
+                        .HasColumnType("bigint");
 
                     b.Property<decimal>("price")
                         .HasColumnType("decimal(18,2)");
@@ -412,6 +442,43 @@ namespace TicketWave.Migrations
                     b.HasIndex("MovieId");
 
                     b.ToTable("movieSubImages");
+                });
+
+            modelBuilder.Entity("TicketWave.Models.Promotion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Discount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IsValid")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("PublishAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ValidTo")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("moviId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("movieId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("movieId");
+
+                    b.ToTable("promotions");
                 });
 
             modelBuilder.Entity("TicketWave.ViewModel.NewPasswordVM", b =>
@@ -522,6 +589,25 @@ namespace TicketWave.Migrations
                     b.Navigation("ApplicationUser");
                 });
 
+            modelBuilder.Entity("TicketWave.Models.Cart", b =>
+                {
+                    b.HasOne("TicketWave.Models.ApplicationUser", "ApplicationUser")
+                        .WithMany()
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TicketWave.Models.Movie", "movie")
+                        .WithMany()
+                        .HasForeignKey("MovieId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationUser");
+
+                    b.Navigation("movie");
+                });
+
             modelBuilder.Entity("TicketWave.Models.Movie", b =>
                 {
                     b.HasOne("TicketWave.Models.Category", "Category")
@@ -569,6 +655,17 @@ namespace TicketWave.Migrations
                         .IsRequired();
 
                     b.Navigation("Movie");
+                });
+
+            modelBuilder.Entity("TicketWave.Models.Promotion", b =>
+                {
+                    b.HasOne("TicketWave.Models.Movie", "movie")
+                        .WithMany()
+                        .HasForeignKey("movieId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("movie");
                 });
 
             modelBuilder.Entity("TicketWave.Models.Actors", b =>

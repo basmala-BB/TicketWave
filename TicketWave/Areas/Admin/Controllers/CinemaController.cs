@@ -9,7 +9,7 @@ using TicketWave.Repositories.IRepositories;
 using TicketWave.Utitlies;
 using TicketWave.ViewModel;
 
-namespace FilmPass.Areas.Admin.Controllers
+namespace TicketWave.Areas.Admin.Controllers
 {
     [Area("Admin")]
 
@@ -45,14 +45,14 @@ namespace FilmPass.Areas.Admin.Controllers
 
             Cinema cinemas = createCinemaVm.Adapt<Cinema>();
 
-            if (createCinemaVm.ImagePath is not null && createCinemaVm.ImagePath.Length > 0)
+            if (createCinemaVm.Path  is not null && createCinemaVm.Path .Length > 0)
             {
 
-                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(createCinemaVm.ImagePath.FileName);
-                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot//images", fileName);
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(createCinemaVm.Path .FileName);
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images", fileName);
                 using (var stream = System.IO.File.Create(filePath))
                 {
-                    createCinemaVm.ImagePath.CopyTo(stream);
+                    createCinemaVm.Path .CopyTo(stream);
                 }
                 cinemas.ImagePath = fileName;
             }
@@ -89,15 +89,15 @@ namespace FilmPass.Areas.Admin.Controllers
             if (cinemaInDb == null)
                 return RedirectToAction("NotFoundPage", "Home");
             Cinema cinemas = updateCinemaVM.Adapt<Cinema>();
-            if (updateCinemaVM.NewImagePath is not null && updateCinemaVM.NewImagePath.Length > 0)
+            if (updateCinemaVM.NewImagePath  is not null && updateCinemaVM.NewImagePath .Length > 0)
             {
-                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(updateCinemaVM.NewImagePath.FileName);
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(updateCinemaVM.NewImagePath .FileName);
                 var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot//images", fileName);
                 using (var stream = System.IO.File.Create(filePath))
                 {
-                    updateCinemaVM.NewImagePath.CopyTo(stream);
+                    updateCinemaVM.NewImagePath .CopyTo(stream);
                 }
-                var oldpath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot//images", cinemaInDb.ImagePath);
+                var oldpath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot//images", cinemaInDb.ImagePath );
                 if (System.IO.File.Exists(oldpath))
                 {
                     System.IO.File.Delete(oldpath);

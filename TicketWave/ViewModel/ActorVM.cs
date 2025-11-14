@@ -3,7 +3,7 @@
     public class ActorVM
     {
         public string Name { get; set; } = string.Empty;
-        public IFormFile Image { get; set; } = default!;
+        public IFormFile Path { get; set; } = default!;
     }
 
 }

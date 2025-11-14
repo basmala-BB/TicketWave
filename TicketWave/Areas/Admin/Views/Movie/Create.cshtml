@@ -11,12 +11,12 @@
         <div class="col-12">
             <form method="post" enctype="multipart/form-data">
                 <div class="mb-3">
-                    <label for="Title" class="form-label">Title</label>
-                    <input class="form-control" name="Title" id="Title">
+                    <label for="Title" class="form-label">Name </label>
+                    <input class="form-control" name="Name" id="Name ">
                 </div>
                 <div class="mb-3">
                     <label for="img" class="form-label">Main Img</label>
-                    <input class="form-control" type="file" name="img">
+                    <input class="form-control" type="file" name="Img">
                 </div>
                 <div class="mb-3">
                     <label for="img" class="form-label">Sub Images</label>
@@ -34,6 +34,14 @@
                     <input class="form-control" name="Price">
                 </div>
                 <div class="mb-3">
+                    <label for="DateTime" class="form-label">Date & Time</label>
+                    <input type="datetime-local"
+                           class="form-control"
+                           id="DateTime"
+                           name="DateTime"
+                           value="@Model?DateTime.ToString("yyyy-MM-ddTHH:mm")">
+                </div>
+                @* <div class="mb-3">
                     <label for="Color" class="form-label">Color</label>
 
                     <div id="colorContainer">
@@ -43,7 +51,7 @@
                     </div>
 
                     <button type="button" id="addButtonColor" class="btn btn-outline-primary">+ Add New Color</button>
-                </div>
+                </div> *@
                 <div class="mb-3">
                     <label for="CategoryId" class="form-label">Category</label>
                     @* <input class="form-control" name="CategoryId"> *@
@@ -65,19 +73,15 @@
                         }
                     </select>
                 </div>
-                    <div class="mb-3">
-                        <label for="ActorId" class="form-label">Actor</label>
-                        <select name="ActorId" class="form-select">
-                            @if (Model.actors != null)
-                            {
-                                foreach (var actor in Model.actors)
-                                {
-                                    <option value="@actor.Id">@actor.Name</option>
-                                }
-                            }
-
-                        </select>
-                    </div>
+                <div class="mb-3">
+                    <label class="form-label">Actors</label>
+                    <select name="ActorIds" class="form-select" multiple>
+                        @foreach (var actor in Model.actors)
+                        {
+                            <option value="@actor.Id">@actor.Name</option>
+                        }
+                    </select>
+                </div>
 
                 <div class="mb-3">
                     <label for="status" class="form-label">Status</label>
@@ -94,7 +98,7 @@
     </div>
 </div>
 
-<script>
+@* <script>
     const conateiner = document.getElementById('colorContainer');
     const addBtn = document.getElementById('addButtonColor');
 
@@ -115,5 +119,5 @@
             e.target.parentElement.remove();
         }
     })
-</script>
+</script> *@
 

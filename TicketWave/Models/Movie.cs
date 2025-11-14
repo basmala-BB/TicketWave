@@ -12,10 +12,13 @@ namespace TicketWave.Models
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal price { get; set; }
+        public decimal Discount { get; set; }
+        public double Rate { get; set; }
 
         public DateTime DateTime { get; set; }
         public bool status { get; set; }
         public string MainImg { get; set; } = string.Empty;
+        public long Traffic { get; set; }
 
         public int CategoryId { get; set; }
         public Category Category { get; set; } = null!;

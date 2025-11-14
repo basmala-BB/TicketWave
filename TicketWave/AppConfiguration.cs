@@ -48,6 +48,8 @@ namespace TicketWave
             services.AddScoped<IRepository<Actors>, Repository<Actors>>();
             services.AddScoped<IMovieRepository, MovieRepository>();
             services.AddScoped<IRepository<ApplicationUserOTP>, Repository<ApplicationUserOTP>>();
+            services.AddScoped<IRepository<Cart>, Repository<Cart>>();
+            services.AddScoped<IRepository<Promotion>, Repository<Promotion>>();
             services.AddScoped<IDBInitializer, DBInitializer>();
 
         }

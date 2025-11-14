@@ -1,0 +1,190 @@
+﻿@model Promotion
+
+<style>
+    body {
+        background: #2f2f2f;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .bg-circles div {
+        position: absolute;
+        width: 70px;
+        height: 70px;
+        background: #ffffff;
+        border-radius: 50%;
+        opacity: 0.10;
+    }
+
+    .c1 {
+        top: 20px;
+        left: 30px;
+    }
+
+    .c2 {
+        top: 120px;
+        left: 140px;
+        width: 50px;
+        height: 50px;
+    }
+
+    .c3 {
+        top: 250px;
+        left: 50px;
+        width: 40px;
+        height: 40px;
+    }
+
+    .c4 {
+        top: 350px;
+        left: 200px;
+        width: 60px;
+        height: 60px;
+    }
+
+    .c5 {
+        top: 450px;
+        left: 20px;
+        width: 55px;
+        height: 55px;
+    }
+
+    .c6 {
+        top: 60px;
+        right: 40px;
+        width: 60px;
+        height: 60px;
+    }
+
+    .c7 {
+        top: 200px;
+        right: 120px;
+        width: 40px;
+        height: 40px;
+    }
+
+    .c8 {
+        top: 330px;
+        right: 60px;
+        width: 50px;
+        height: 50px;
+    }
+
+    .c9 {
+        top: 480px;
+        right: 160px;
+        width: 45px;
+        height: 45px;
+    }
+
+    .c10 {
+        bottom: 40px;
+        right: 40px;
+        width: 70px;
+        height: 70px;
+    }
+
+    .c11 {
+        bottom: 120px;
+        left: 120px;
+        width: 55px;
+        height: 55px;
+    }
+
+    .c12 {
+        bottom: 200px;
+        right: 200px;
+        width: 50px;
+        height: 50px;
+    }
+
+    .form-box {
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+        margin-top: 100px;
+        position: relative;
+        z-index: 3;
+    }
+
+    .page-title {
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: #000;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        font-weight: 500;
+        border-radius: 8px;
+    }
+</style>
+
+<div class="bg-circles">
+    <div class="c1"></div>
+    <div class="c2"></div>
+    <div class="c3"></div>
+    <div class="c4"></div>
+    <div class="c5"></div>
+    <div class="c6"></div>
+    <div class="c7"></div>
+    <div class="c8"></div>
+    <div class="c9"></div>
+    <div class="c10"></div>
+    <div class="c11"></div>
+    <div class="c12"></div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+
+            <div class="form-box">
+                <h2 class="page-title">Create new Promotion</h2>
+
+                <form method="post">
+
+                    <div class="mb-3">
+                        <label class="form-label">Code</label>
+                        <input class="form-control" asp-for="Code">
+                        <span class="text-danger" asp-validation-for="Code"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Discount</label>
+                        <input type="number" class="form-control" asp-for="Discount">
+                        <span class="text-danger" asp-validation-for="Discount"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Valid To</label>
+                        <input type="datetime-local" class="form-control" asp-for="ValidTo">
+                        <span class="text-danger" asp-validation-for="ValidTo"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Product</label>
+                        <select name="ProductId" class="form-select">
+                            @foreach (var item in ViewBag.movie)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </select>
+                        <span class="text-danger" asp-validation-for="moviId"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary submit-btn">Submit</button>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

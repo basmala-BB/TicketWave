@@ -4,12 +4,15 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>7a4cb249-c9f6-4003-9882-ef0d64f2eb13</UserSecretsId>
   </PropertyGroup>
 	
 
 	
 	
 	  <ItemGroup>
+		    <PackageReference Include="Stripe.net" Version="49.1.0" />		  
+		  
     <PackageReference Include="Magnum" Version="2.1.3" />
     <PackageReference Include="Mapster" Version="7.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.10" />
@@ -20,7 +23,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
+    <PackageReference Include="Stripe.net" Version="49.2.0" />
     <PackageReference Include="UmbracoCms.Core" Version="8.18.15" />
+
+		  
   </ItemGroup>
 
 

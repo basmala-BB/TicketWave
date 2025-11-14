@@ -1,63 +1,78 @@
 ﻿@using TicketWave.Utitlies
 @model IEnumerable<TicketWave.Models.Actors>
 
-<div class="container">
+<div class="container my-5">
 
-    <div class="row mb-3 align-items-center my-3">
-        <div class="col-md-6">
-            <h2 class="display-6">All Actors</h2>
-        </div>
-        <div class="col-md-6 text-md-end text-start mt-2 mt-md-0">
-            <a asp-area="Admin" asp-controller="Actors" asp-action="Create" class="btn btn-success">Create</a>
-        </div>
+    <div class="text-center mb-4">
+        <h2 class="display-4 text-white">All Actors</h2>
+        <a asp-area="Admin" asp-controller="Actors" asp-action="Create" class="btn btn-success mt-3">Create New Actor</a>
     </div>
 
-    <div class="row">
-        <div class="col-12">
+    <div class="row g-4">
+        @foreach (var actor in Model)
+        {
+            <div class="col-sm-6 col-md-4 col-lg-3">
+                <div class="card actor-card h-100">
+                    <img src="@(string.IsNullOrEmpty(actor.ImagePath) ? "/assets/img/default-placeholder.png" : Url.Content($"~/images/{actor.ImagePath}"))"
+                         class="card-img-top" alt="@actor.Name" />
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <h5 class="card-title text-center">@actor.Name</h5>
 
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th scope="col">Id</th>
-                        <th scope="col">Name</th>
-                        <th scope="col">Image</th>
-                        <th scope="col">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model)
-                    {
-                        <tr>
-                            <th scope="row">@item.Id</th>
-                            <td>@item.Name</td>
-                            <td>
-                                @if (!string.IsNullOrEmpty(item.ImagePath))
-                                {
-                                    <img src="~/images/@item.ImagePath" alt="@item.Name" width="80" />
-                                }
-                                else
-                                {
-                                    <span>No Image</span>
-                                }
-                            </td>
-                            @if (User.IsInRole(SD.SUPER_ADMIN_ROLE) || User.IsInRole(SD.ADMIN_ROLE))
-                            {
-                                <td>
-                                    <a asp-area="Admin" asp-controller="Actors" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning">Edit</a>
-                                    <a asp-area="Admin" asp-controller="Actors" asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-delete">Delete</a>
-                                </td>
-                            }
-                            else
-                            {
-                                <td>No Actions!</td>
-                            }
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+                        @if (User.IsInRole(SD.SUPER_ADMIN_ROLE) || User.IsInRole(SD.ADMIN_ROLE))
+                        {
+                            <div class="d-flex justify-content-between mt-3">
+                                <a asp-area="Admin" asp-controller="Actors" asp-action="Edit" asp-route-id="@actor.Id" class="btn btn-warning btn-sm flex-grow-1 me-1">Edit</a>
+                                <a asp-area="Admin" asp-controller="Actors" asp-action="Delete" asp-route-id="@actor.Id" class="btn btn-danger btn-sm btn-delete flex-grow-1 ms-1">Delete</a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 </div>
+
+<style>
+    body {
+        background: linear-gradient(to bottom, #111, #222);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .actor-card {
+        background: rgba(0,0,0,0.35);
+        backdrop-filter: blur(6px);
+        border-radius: 15px;
+        overflow: hidden;
+        color: #fff;
+        transition: transform 0.3s, box-shadow 0.3s;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    }
+
+        .actor-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.6);
+        }
+
+        .actor-card .card-img-top {
+            height: 250px;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        }
+
+    h5.card-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+
+    .btn-warning, .btn-danger {
+        font-size: 0.85rem;
+    }
+
+    .text-white {
+        color: #fff !important;
+    }
+</style>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -65,7 +80,7 @@
 
         deleteButtons.forEach(button => {
             button.addEventListener("click", function (e) {
-                e.preventDefault(); // stop normal navigation
+                e.preventDefault();
 
                 const url = this.getAttribute("href");
 
@@ -81,11 +96,10 @@
                     if (result.isConfirmed) {
                         Swal.fire({
                             title: "Deleted!",
-                            text: "Your file has been deleted.",
+                            text: "The actor has been deleted.",
                             icon: "success"
                         });
 
-                        // Redirect to delete URL
                         window.location.href = url;
                     }
                 });

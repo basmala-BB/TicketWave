@@ -1,7 +1,8 @@
-﻿using TicketWave.Repositories.IRepositories;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using TicketWave.Models;
+using TicketWave.Repositories.IRepositories;
 
 namespace TicketWave.Repositories
 {
@@ -27,7 +28,7 @@ namespace TicketWave.Repositories
         {
             _dbSet.Update(entity);
         }
-        public void Delete(T entity )
+        public void Delete(T entity)
         {
             _dbSet.Remove(entity);
         }
@@ -54,16 +55,7 @@ namespace TicketWave.Repositories
 
             //entities = entities.Where(e => e.Status);
 
-            try
-            {
-                return await entities.ToListAsync(cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ EF Core Error: {ex.Message}");
-                throw; 
-            }
-
+            return await entities.ToListAsync(cancellationToken);
         }
 
         public async Task<T?> GetOneAsync(
@@ -88,4 +80,5 @@ namespace TicketWave.Repositories
         }
     }
 }
+
 

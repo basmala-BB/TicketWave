@@ -40,47 +40,35 @@ namespace TicketWave.Areas.Admin.Controllers
         }
 
         // ================= Create POST =================
+
         [HttpPost]
         public async Task<IActionResult> Create(ActorVM actorVM, CancellationToken cancellationToken)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                if (!ModelState.IsValid)
-                    return View(actorVM);
-
-                Actors actors = new Actors
-                {
-                    Name = actorVM.Name
-                };
-
-                if (actorVM.Image is not null && actorVM.Image.Length > 0)
-                {
-                    var imagesPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
-                    if (!Directory.Exists(imagesPath))
-                        Directory.CreateDirectory(imagesPath);
-
-                    var fileName = Guid.NewGuid() + Path.GetExtension(actorVM.Image.FileName);
-                    var filePath = Path.Combine(imagesPath, fileName);
-
-                    using var stream = new FileStream(filePath, FileMode.Create);
-                    await actorVM.Image.CopyToAsync(stream, cancellationToken);
-
-                    actors.ImagePath = fileName;
-                }
-
-                await _ActorsRepository.AddAsync(actors, cancellationToken);
-                await _ActorsRepository.CommitAsync(cancellationToken);
-
-                TempData["success-notification"] = "Actor added successfully";
-                return RedirectToAction(nameof(Index));
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.StackTrace);
-                ModelState.AddModelError(string.Empty, "حدث خطأ أثناء حفظ الممثل.");
                 return View(actorVM);
             }
+
+            Actors actors = actorVM.Adapt<Actors>();
+
+            if (actorVM.Path is not null && actorVM.Path.Length > 0)
+            {
+
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(actorVM.Path.FileName);
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images", fileName);
+                using (var stream = System.IO.File.Create(filePath))
+                {
+                    actorVM.Path.CopyTo(stream);
+                }
+                actors.ImagePath = fileName;
+            }
+
+            await _ActorsRepository.AddAsync(actors, cancellationToken);
+            await _ActorsRepository.CommitAsync(cancellationToken);
+
+            TempData["Notification"] = "Cinema created successfully!";
+            return RedirectToAction(nameof(Index));
+
         }
 
 
@@ -113,17 +101,17 @@ namespace TicketWave.Areas.Admin.Controllers
 
             actors.Name = actorVM.Name;
 
-            if (actorVM.Image != null && actorVM.Image.Length > 0)
+            if (actorVM.Path != null && actorVM.Path.Length > 0)
             {
                 var imagesFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
                 if (!Directory.Exists(imagesFolder))
                     Directory.CreateDirectory(imagesFolder);
 
-                var fileName = Guid.NewGuid() + Path.GetExtension(Path.GetFileName(actorVM.Image.FileName));
+                var fileName = Guid.NewGuid() + Path.GetExtension(Path.GetFileName(actorVM.Path.FileName));
                 var filePath = Path.Combine(imagesFolder, fileName);
 
                 using var stream = new FileStream(filePath, FileMode.Create);
-                actorVM.Image.CopyTo(stream);
+                actorVM.Path.CopyTo(stream);
 
                 if (!string.IsNullOrEmpty(actors.ImagePath))
                 {

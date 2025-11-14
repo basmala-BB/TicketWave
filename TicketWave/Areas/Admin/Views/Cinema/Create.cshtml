@@ -38,17 +38,25 @@
 
                 <!-- Cinema Image -->
                 <div class="mb-3">
-                    <label class="form-label">Image</label>
-                
-                    <input class="form-control" type="file" name="ImageFile" />
-                    <span class="text-danger" asp-validation-for="ImagePath"></span>
+                    <label class="form-label">ImagePath</label>
+                    <input class="form-control" type="file" name="Path">
+                    <span class="text-danger" asp-validation-for="Path"></span>
                 </div>
+
+                <!-- 📸 مكان عرض الصورة قبل الحفظ -->
+                <div class="mb-3 text-center">
+                    <img id="imagePreview" src="#" alt="Image Preview" style="max-width: 200px; display:none; border-radius:10px; box-shadow:0 0 5px rgba(0,0,0,0.3);" />
+                </div>
+
 
                 <!-- Cinema Description -->
                 <div class="mb-3">
-                    <label class="form-label">Description</label>
-                    <textarea class="form-control" style="height: 100px" asp-for="Description" placeholder="Leave a description here"></textarea>
-                    <span class="text-danger" asp-validation-for="Description"></span>
+                    <label for="description" class="form-label">Description</label>
+                    <div class="form-floating">
+                        <textarea class="form-control" placeholder="Leave a description here" style="height: 100px" asp-for="Description"></textarea>
+                        <label for="description">You Description Here...</label>
+                    </div>
+                    <span class="text-danger" asp-validation-for="@Model.Description"></span>
                 </div>
 
                 <!-- Cinema Status -->

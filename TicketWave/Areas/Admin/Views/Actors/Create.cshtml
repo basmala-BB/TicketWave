@@ -3,7 +3,7 @@
 <div class="container">
     <div class="row mb-3 align-items-center my-3">
         <div class="col-md-6">
-            <h2 class="display-6">Create new Actors</h2>
+            <h2 class="display-6">Create new Actor</h2>
         </div>
     </div>
 
@@ -15,14 +15,47 @@
                     <input class="form-control" asp-for="Name">
                     <span class="text-danger" asp-validation-for="Name"></span>
                 </div>
+
                 <div class="mb-3">
-                    <label for=" Image " class="form-label"> Image </label>
-                    <input class="form-control" type="file" name=" Image ">
-                    <span class="text-danger" asp-validation-for=" Image "></span>
+                    <label for="img" class="form-label">img</label>
+                    <input class="form-control" type="file" name="Path">
+                    <span class="text-danger" asp-validation-for="Path"></span>
                 </div>
-                    <button type="submit" class="btn btn-primary">Submit</button>
+
+                <!-- 📸 مكان عرض الصورة قبل الحفظ -->
+                <div class="mb-3 text-center">
+                    <img id="imagePreview" src="#" alt="Image Preview" style="max-width: 200px; display:none; border-radius:10px; box-shadow:0 0 5px rgba(0,0,0,0.3);" />
+                </div>
+
+                <button type="submit" class="btn btn-primary">Submit</button>
             </form>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // 🖼️ عرض معاينة الصورة المختارة
+        document.getElementById('imageInput').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            const preview = document.getElementById('imagePreview');
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = "#";
+                preview.style.display = 'none';
+            }
+        });
+    </script>
+}
 

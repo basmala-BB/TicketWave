@@ -1,6 +1,8 @@
-﻿using TicketWave;
+﻿using Stripe;
+using TicketWave;
 using TicketWave.Configurations;
 using TicketWave.Models;
+using TicketWave.Utitlies;
 using TicketWave.Utitlies.DBInitilizer;
 
 public class Program
@@ -18,6 +20,9 @@ public class Program
 
         builder.Services.RegisterConfig(connectionString);
         builder.Services.RegisterMapsterConfig();
+
+        builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
+        StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
         var app = builder.Build();
 

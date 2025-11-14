@@ -1,0 +1,202 @@
+﻿@model MovieWithRelatedVM
+
+<style>
+    body {
+        background: #ffe6f2; /* بينك ناعم */
+        display: flex;
+        justify-content: center;
+        padding-top: 30px;
+    }
+
+    .page-container {
+        width: 90%;
+        max-width: 1100px; /* النص في منتصف الصفحة */
+    }
+
+    .product-section {
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        margin-bottom: 40px;
+    }
+
+    .product-wrapper {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 40px;
+        align-items: flex-start;
+        justify-content: center;
+    }
+
+        .product-wrapper img {
+            width: 100%;
+            max-width: 220px;
+            border-radius: 15px;
+            object-fit: cover;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+    .product-details {
+        flex: 1;
+        font-size: 1.6rem; /* تكبير التفاصيل */
+        min-width: 320px;
+    }
+
+    /* Related Movies */
+    .related-row {
+        display: flex;
+        gap: 20px;
+        justify-content: center; /* في النص */
+        flex-wrap: nowrap; /* جنب بعض */
+    }
+
+    .related-card {
+        width: 100%;
+        max-width: 340px; /* حجم الكارت ثابت */
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        overflow: hidden;
+        transition: 0.2s;
+        background: white;
+    }
+
+        /* تكبير عنوان الفيلم */
+        .related-card h5 {
+            font-size: 1.2rem; /* العنوان */
+            font-weight: bold;
+        }
+
+        /* تكبير السعر */
+        .related-card span,
+        .related-card .price {
+            font-size: 1.1rem;
+        }
+
+        /* تكبير زرار View Details */
+        .related-card a {
+            font-size: 1.05rem;
+            padding: 5px 10px; /* ممكن تزود/تنقص حسب الشكل */
+        }
+
+        .related-card img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+        }
+
+        .related-card:hover {
+            transform: scale(1.04);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+
+</style>
+
+
+<div class="page-container">
+
+    <!-- المنتج الأساسي -->
+    <section class="product-section">
+
+        <div class="product-wrapper">
+
+            <!-- الصورة -->
+            <img src="~/images/@Model.movie.MainImg" alt="@Model.movie.Name" />
+
+            <!-- التفاصيل -->
+            <div class="product-details">
+                <span class="badge bg-dark mb-3" style="font-size: 1rem;">
+                    Category: @Model.movie.Category.Name
+                </span>
+
+                <h1 class="fw-bold" style="font-size: 2.4rem;">
+                    @Model.movie.Name
+                </h1>
+
+                <div class="fs-3 mb-3 mt-3">
+                    <span class="text-muted text-decoration-line-through">
+                        @Model.movie.price.ToString("c")
+                    </span>
+
+                    <span class="ms-3 fw-bold text-danger">
+                        @((Model.movie.price - (Model.movie.price * Model.movie.Discount / 100)).ToString("c"))
+                    </span>
+                </div>
+
+                <p class="lead" style="font-size: 1.3rem; line-height: 1.7;">
+                    @Model.movie.Description
+                </p>
+
+                <form asp-action="AddToCart" asp-controller="Cart" method="post" class="mt-4">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="MovieId" value="@Model.movie.Id" />
+                    <div class="d-flex align-items-center">
+                        <input class="form-control text-center me-3" id="inputQuantity"
+                               type="number" name="count" value="1" style="max-width: 4rem" />
+                        <button class="btn btn-outline-dark flex-shrink-0 mt-3" type="submit">
+                            <i class="bi-cart-fill me-1"></i>
+                            Add to cart
+                        </button>
+                    </div>
+                </form>
+س
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+
+    <!-- Related Movies -->
+    <section class="mt-5 mb-5">
+
+        <h2 class="fw-bold mb-4 text-dark text-center" style="font-size: 2rem;">
+            Related Movies
+        </h2>
+
+        <div class="related-row">
+
+            @foreach (var item in Model.RelatedMovies)
+            {
+                <div class="related-card">
+
+                    <img src="~/images/@item.MainImg" alt="@item.Name" />
+
+                    <div class="p-3 text-center">
+                        <h5 class="fw-bold">@item.Name</h5>
+
+                        <div class="text-warning mb-2">
+                            @for (var i = 0; i < item.Rate; i++)
+                            {
+                                <i class="bi-star-fill"></i>
+                            }
+                        </div>
+
+                        <span class="text-muted text-decoration-line-through">
+                            @item.price.ToString("c")
+                        </span>
+
+                        <div class="fw-bold text-danger">
+                            @((item.price - (item.price * item.Discount / 100)).ToString("c"))
+                        </div>
+                    </div>
+
+                    <div class="pb-3 text-center">
+                        <a class="btn btn-outline-dark btn-sm" href="/Customer/Home/Item/@item.Id">
+                            View Details
+                        </a>
+                    </div>
+
+                </div>
+            }
+
+        </div>
+
+    </section>
+
+</div>
+
+
+
